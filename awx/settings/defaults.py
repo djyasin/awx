@@ -158,6 +158,11 @@ REMOTE_HOST_HEADERS = ['REMOTE_ADDR', 'REMOTE_HOST']
 # REMOTE_HOST_HEADERS will be trusted unconditionally')
 PROXY_IP_ALLOWED_LIST = []
 
+# If we are behind a reverse proxy/load balancer, use this setting to
+# allow the scheme://addresses from which Tower should trust csrf requests from
+# If this setting is an empty list (the default), we will only trust ourself
+CSRF_TRUSTED_ORIGINS = []
+
 CUSTOM_VENV_PATHS = []
 
 # Warning: this is a placeholder for a database setting
@@ -467,12 +472,13 @@ CELERYBEAT_SCHEDULE = {
     'receptor_reaper': {'task': 'awx.main.tasks.system.awx_receptor_workunit_reaper', 'schedule': timedelta(seconds=60)},
     'send_subsystem_metrics': {'task': 'awx.main.analytics.analytics_tasks.send_subsystem_metrics', 'schedule': timedelta(seconds=20)},
     'cleanup_images': {'task': 'awx.main.tasks.system.cleanup_images_and_files', 'schedule': timedelta(hours=3)},
-    'cleanup_host_metrics': {'task': 'awx.main.tasks.system.cleanup_host_metrics', 'schedule': timedelta(days=1)},
+    'cleanup_host_metrics': {'task': 'awx.main.tasks.system.cleanup_host_metrics', 'schedule': timedelta(hours=3, minutes=30)},
+    'host_metric_summary_monthly': {'task': 'awx.main.tasks.host_metrics.host_metric_summary_monthly', 'schedule': timedelta(hours=4)},
 }
 
 # Django Caching Configuration
 DJANGO_REDIS_IGNORE_EXCEPTIONS = True
-CACHES = {'default': {'BACKEND': 'django_redis.cache.RedisCache', 'LOCATION': 'unix:/var/run/redis/redis.sock?db=1'}}
+CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache', 'LOCATION': 'unix:/var/run/redis/redis.sock?db=1'}}
 
 # Social Auth configuration.
 SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
@@ -960,6 +966,9 @@ AWX_RUNNER_KEEPALIVE_SECONDS = 0
 # Delete completed work units in receptor
 RECEPTOR_RELEASE_WORK = True
 
+# K8S only. Use receptor_log_level on AWX spec to set this properly
+RECEPTOR_LOG_LEVEL = 'info'
+
 MIDDLEWARE = [
     'django_guid.middleware.guid_middleware',
     'awx.main.middleware.SettingsCacheMiddleware',
@@ -1047,4 +1056,12 @@ CLEANUP_HOST_METRICS_LAST_TS = None
 # Host metrics cleanup - minimal interval between two cleanups in days
 CLEANUP_HOST_METRICS_INTERVAL = 30  # days
 # Host metrics cleanup - soft-delete HostMetric records with last_automation < [threshold] (in months)
-CLEANUP_HOST_METRICS_THRESHOLD = 12  # months
+CLEANUP_HOST_METRICS_SOFT_THRESHOLD = 12  # months
+# Host metrics cleanup
+# - delete HostMetric record with deleted=True and last_deleted < [threshold]
+# - also threshold for computing HostMetricSummaryMonthly (command/scheduled task)
+CLEANUP_HOST_METRICS_HARD_THRESHOLD = 36  # months
+
+# Host metric summary monthly task - last time of run
+HOST_METRIC_SUMMARY_TASK_LAST_TS = None
+HOST_METRIC_SUMMARY_TASK_INTERVAL = 7  # days
