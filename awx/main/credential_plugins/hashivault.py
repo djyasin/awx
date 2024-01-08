@@ -206,15 +206,15 @@ def handle_auth(**kwargs):
     elif kwargs.get('kubernetes_role'):
         token = method_auth(**kwargs, auth_param=kubernetes_auth(**kwargs))
     elif kwargs.get('username') and kwargs.get('password'):
-        token = method_auth(**kwargs, auth_param=ldap_auth(**kwargs))
+        token = method_auth(**kwargs, auth_param=userpass_auth(**kwargs))
     elif kwargs.get('client_cert_public') and kwargs.get('client_cert_private'):
         token = method_auth(**kwargs, auth_param=client_cert_auth(**kwargs))
     else:
-        raise Exception('Token, LDAP, AppRole, Kubernetes, or TLS authentication parameters must be set')
+        raise Exception('Token, Username/Password, AppRole, Kubernetes, or TLS authentication parameters must be set')
     return token
 
 
-def ldap_auth(**kwargs):
+def userpass_auth(**kwargs):
     return {'username': kwargs['username'], 'password': kwargs['password']}
 
 
