@@ -60,10 +60,10 @@ def test_hashivault_client_cert_auth_no_role():
     assert res == expected_res
 
 
-def test_hashivault_ldap_auth():
+def test_hashivault_userpass_auth():
     kwargs = {'username': 'the_username', 'password': 'the_password'}
     expected_res = {'username': 'the_username', 'password': 'the_password'}
-    res = hashivault.ldap_auth(**kwargs)
+    res = hashivault.userpass_auth(**kwargs)
     assert res == expected_res
 
 
