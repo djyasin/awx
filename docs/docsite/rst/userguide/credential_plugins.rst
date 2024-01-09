@@ -273,11 +273,10 @@ When **HashiCorp Vault Secret Lookup** is selected for **Credential Type**, prov
 - **Path to Auth**: specify a path if other than the default path of ``/approle``
 - **API Version** (required): select v1 for static lookups and v2 for versioned lookups
 - **Username and Password**: specify the username and password for the user account
-- **LDAP**: select the LDAP user to use for authentication
 
 For more detail about the Approle auth method and its fields, refer to the `Vault documentation for Approle Auth Method <https://www.vaultproject.io/docs/auth/approle>`_.
 
-For more detail about the LDAP auth method and its fields, refer to the `Vault documentation for LDAP auth method <https://www.vaultproject.io/docs/auth/ldap>`_.
+For more detail about the Userpass auth method and its fields, refer to the `Vault documentation for LDAP auth method <https://www.vaultproject.io/docs/auth/userpass>`_.
 
 For more detail about the Kubernetes auth method and its fields, refer to the `Vault documentation for Kubernetes auth method <https://developer.hashicorp.com/vault/docs/auth/kubernetes>` _.
 
