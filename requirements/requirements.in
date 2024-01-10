@@ -59,6 +59,7 @@ twilio
 twisted[tls]
 uWSGI
 uwsgitop
+urllib3>=1.26.17 # CVE-2023-43804
 wheel>=0.38.1 # CVE-2022-40898
 pip==21.2.4  # see UPGRADE BLOCKERs
 setuptools  # see UPGRADE BLOCKERs
