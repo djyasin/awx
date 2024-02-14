@@ -23,10 +23,10 @@ generate_requirements() {
   # FIXME: https://github.com/jazzband/pip-tools/issues/1558
   ${venv}/bin/python3 -m pip install -U 'pip<22.0' pip-tools
 
-  ${pip_compile} "$1" --output-file requirements.txt
+  ${pip_compile} $1 --output-file requirements.txt
   # consider the git requirements for purposes of resolving deps
   # Then remove any git+ lines from requirements.txt
-  if [[ "$NEEDS_HELP" == "1" ]] ; then
+  if [[ "$sanitize_git" == "1" ]] ; then
     while IFS= read -r line; do
       if [[ $line != \#* ]]; then  # ignore comments
         sed -i "\!${line%#*}!d" requirements.txt
