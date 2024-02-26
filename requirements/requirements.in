@@ -47,7 +47,7 @@ python-dsv-sdk>=1.0.4
 python-tss-sdk>=1.2.1
 python-ldap
 pyyaml>=6.0.1
-receptorctl==1.4.2
+receptorctl==1.4.4
 social-auth-core[openidconnect]==4.3.0  # see UPGRADE BLOCKERs
 social-auth-app-django==5.0.0  # see UPGRADE BLOCKERs
 sqlparse >= 0.4.4   # Required by django https://github.com/ansible/awx/security/dependabot/96
