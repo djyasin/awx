@@ -163,11 +163,9 @@ class Command(BaseCommand):
 
             return
 
-        websocket_relay_manager = WebSocketRelayManager()
-
         while True:
             try:
-                asyncio.run(websocket_relay_manager.run())
+                asyncio.run(WebSocketRelayManager().run())
             except KeyboardInterrupt:
                 logger.info('Shutting down Websocket Relayer')
                 break
