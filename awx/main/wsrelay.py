@@ -304,6 +304,7 @@ class WebSocketRelayManager(object):
         self.stats_mgr = RelayWebsocketStatsManager(event_loop, self.local_hostname)
         self.stats_mgr.start()
 
+        # Set up a pg_notify consumer for allowing web nodes to "provision" and "deprovision" themselves gracefully.
         database_conf = deepcopy(settings.DATABASES['default'])
         database_conf['OPTIONS'] = deepcopy(database_conf.get('OPTIONS', {}))
 
@@ -312,11 +313,13 @@ class WebSocketRelayManager(object):
         for k, v in settings.LISTENER_DATABASES.get('default', {}).get('OPTIONS', {}).items():
             database_conf['OPTIONS'][k] = v
 
+        if 'PASSWORD' in database_conf:
+            database_conf['OPTIONS']['password'] = database_conf.pop('PASSWORD')
+
         async_conn = await psycopg.AsyncConnection.connect(
             dbname=database_conf['NAME'],
             host=database_conf['HOST'],
             user=database_conf['USER'],
-            password=database_conf['PASSWORD'],
             port=database_conf['PORT'],
             **database_conf.get("OPTIONS", {}),
         )

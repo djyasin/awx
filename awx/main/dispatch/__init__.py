@@ -1,6 +1,7 @@
 import os
 import psycopg
 import select
+from copy import deepcopy
 
 from contextlib import contextmanager
 
@@ -94,8 +95,8 @@ class PubSub(object):
 
 
 def create_listener_connection():
-    conf = settings.DATABASES['default'].copy()
-    conf['OPTIONS'] = conf.get('OPTIONS', {}).copy()
+    conf = deepcopy(settings.DATABASES['default'])
+    conf['OPTIONS'] = deepcopy(conf.get('OPTIONS', {}))
     # Modify the application name to distinguish from other connections the process might use
     conf['OPTIONS']['application_name'] = get_application_name(settings.CLUSTER_HOST_ID, function='listener')
 
@@ -105,7 +106,11 @@ def create_listener_connection():
     for k, v in settings.LISTENER_DATABASES.get('default', {}).get('OPTIONS', {}).items():
         conf['OPTIONS'][k] = v
 
-    connection_data = f"dbname={conf['NAME']} host={conf['HOST']} user={conf['USER']} password={conf['PASSWORD']} port={conf['PORT']}"
+    # Allow password-less authentication
+    if 'PASSWORD' in conf:
+        conf['OPTIONS']['password'] = conf.pop('PASSWORD')
+
+    connection_data = f"dbname={conf['NAME']} host={conf['HOST']} user={conf['USER']} port={conf['PORT']}"
     return psycopg.connect(connection_data, autocommit=True, **conf['OPTIONS'])
 
 
