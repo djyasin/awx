@@ -107,7 +107,7 @@ class ControllerModule(AnsibleModule):
         # Perform magic depending on whether controller_oauthtoken is a string or a dict
         if self.params.get('controller_oauthtoken'):
             token_param = self.params.get('controller_oauthtoken')
-            if type(token_param) is dict:
+            if isinstance(token_param, dict):
                 if 'token' in token_param:
                     self.oauth_token = self.params.get('controller_oauthtoken')['token']
                 else:
@@ -215,7 +215,7 @@ class ControllerModule(AnsibleModule):
                 try:
                     config_data = yaml.load(config_string, Loader=yaml.SafeLoader)
                     # If this is an actual ini file, yaml will return the whole thing as a string instead of a dict
-                    if type(config_data) is not dict:
+                    if not isinstance(config_data, dict):
                         raise AssertionError("The yaml config file is not properly formatted as a dict.")
                     try_config_parsing = False
 
@@ -257,7 +257,7 @@ class ControllerModule(AnsibleModule):
             if honorred_setting in config_data:
                 # Veriffy SSL must be a boolean
                 if honorred_setting == 'verify_ssl':
-                    if type(config_data[honorred_setting]) is str:
+                    if isinstance(config_data[honorred_setting], str):
                         setattr(self, honorred_setting, strtobool(config_data[honorred_setting]))
                     else:
                         setattr(self, honorred_setting, bool(config_data[honorred_setting]))
@@ -504,18 +504,13 @@ class ControllerAPIModule(ControllerModule):
 
         try:
             response = self.session.open(
-                method, url.geturl(),
-                headers=headers,
-                timeout=self.request_timeout,
-                validate_certs=self.verify_ssl,
-                follow_redirects=True,
-                data=data
+                method, url.geturl(), headers=headers, timeout=self.request_timeout, validate_certs=self.verify_ssl, follow_redirects=True, data=data
             )
-        except (SSLValidationError) as ssl_err:
+        except SSLValidationError as ssl_err:
             self.fail_json(msg="Could not establish a secure connection to your host ({1}): {0}.".format(url.netloc, ssl_err))
-        except (ConnectionError) as con_err:
+        except ConnectionError as con_err:
             self.fail_json(msg="There was a network error of some kind trying to connect to your host ({1}): {0}.".format(url.netloc, con_err))
-        except (HTTPError) as he:
+        except HTTPError as he:
             # Sanity check: Did the server send back some kind of internal error?
             if he.code >= 500:
                 self.fail_json(msg='The host sent back a server error ({1}): {0}. Please check the logs and try again later'.format(url.path, he))
@@ -550,7 +545,7 @@ class ControllerAPIModule(ControllerModule):
                 pass
             else:
                 self.fail_json(msg="Unexpected return code when calling {0}: {1}".format(url.geturl(), he))
-        except (Exception) as e:
+        except Exception as e:
             self.fail_json(msg="There was an unknown error when trying to connect to {2}: {0} {1}".format(type(e).__name__, e, url.geturl()))
 
         if not self.version_checked:
@@ -587,14 +582,14 @@ class ControllerAPIModule(ControllerModule):
         response_body = ''
         try:
             response_body = response.read()
-        except (Exception) as e:
+        except Exception as e:
             self.fail_json(msg="Failed to read response body: {0}".format(e))
 
         response_json = {}
         if response_body and response_body != '':
             try:
                 response_json = loads(response_body)
-            except (Exception) as e:
+            except Exception as e:
                 self.fail_json(msg="Failed to parse the response json: {0}".format(e))
 
         if PY2:
@@ -636,7 +631,7 @@ class ControllerAPIModule(ControllerModule):
                 except Exception as e:
                     resp = 'unknown {0}'.format(e)
                 self.fail_json(msg='Failed to get token: {0}'.format(he), response=resp)
-            except (Exception) as e:
+            except Exception as e:
                 # Sanity check: Did the server send back some kind of internal error?
                 self.fail_json(msg='Failed to get token: {0}'.format(e))
 
@@ -646,7 +641,7 @@ class ControllerAPIModule(ControllerModule):
                 response_json = loads(token_response)
                 self.oauth_token_id = response_json['id']
                 self.oauth_token = response_json['token']
-            except (Exception) as e:
+            except Exception as e:
                 self.fail_json(msg="Failed to extract token information from login response: {0}".format(e), **{'response': token_response})
 
         # If we have neither of these, then we can try un-authenticated access
@@ -1013,7 +1008,7 @@ class ControllerAPIModule(ControllerModule):
                 except Exception as e:
                     resp = 'unknown {0}'.format(e)
                 self.warn('Failed to release token: {0}, response: {1}'.format(he, resp))
-            except (Exception) as e:
+            except Exception as e:
                 # Sanity check: Did the server send back some kind of internal error?
                 self.warn('Failed to release token {0}: {1}'.format(self.oauth_token_id, e))
 
