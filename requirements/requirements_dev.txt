@@ -371,7 +371,7 @@ referencing==0.30.2
     #   jupyter-events
 remote-pdb==2.1.0
     # via -r /awx_devel/requirements/requirements_dev.txt
-requests==2.31.0
+requests==2.32.3
     # via
     #   coreapi
     #   jupyterlab-server
