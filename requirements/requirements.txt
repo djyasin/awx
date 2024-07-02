@@ -111,6 +111,7 @@ django==4.2.11
     #   django-polymorphic
     #   django-solo
     #   djangorestframework
+    #   social-auth-app-django
 django-auth-ldap==4.1.0
     # via -r /awx_devel/requirements/requirements.in
 django-cors-headers==3.13.0
@@ -406,9 +407,9 @@ slack-sdk==3.19.4
     # via -r /awx_devel/requirements/requirements.in
 smmap==5.0.0
     # via gitdb
-social-auth-app-django==5.0.0
+social-auth-app-django==5.4.1
     # via -r /awx_devel/requirements/requirements.in
-social-auth-core[openidconnect]==4.3.0
+social-auth-core[openidconnect]==4.4.2
     # via
     #   -r /awx_devel/requirements/requirements.in
     #   social-auth-app-django
@@ -432,8 +433,9 @@ twisted[tls]==23.10.0
     #   daphne
 txaio==22.2.1
     # via autobahn
-typing_extensions==4.10.0
+typing-extensions==4.10.0
     # via
+    #   -r /awx_devel/requirements/requirements.in
     #   azure-core
     #   jwcrypto
     #   psycopg
