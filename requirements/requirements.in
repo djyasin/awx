@@ -61,7 +61,7 @@ twilio
 twisted[tls] >= 24.7.0 #  CVE-2024-41810
 uWSGI
 uwsgitop
-urllib3>=1.26.17 # CVE-2023-43804
+urllib3>=1.26.19 # CVE-2024-37891
 wheel>=0.38.1 # CVE-2022-40898
 pip==23.3.2  # see UPGRADE BLOCKERs upgraded for CVE-2023-5752
 setuptools  # see UPGRADE BLOCKERs
