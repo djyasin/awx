@@ -13,7 +13,7 @@ cryptography>=41.0.6  # CVE-2023-49083
 Cython<3 # Since the bump to PyYAML 5.4.1 this is now a mandatory dep
 daphne
 distro
-django==4.2.15  # CVE-2024-41990
+django==4.2.16  # CVE-2024-45230
 django-auth-ldap
 django-cors-headers
 django-crum
@@ -51,7 +51,7 @@ pyyaml>=6.0.1
 receptorctl==1.4.8
 social-auth-core==4.5.4 # hard pinned due to resolver picking CVE version when uncapped
 social-auth-app-django==5.4.2  # see UPGRADE BLOCKERs
-sqlparse >= 0.4.4   # Required by django https://github.com/ansible/awx/security/dependabot/96
+sqlparse==0.5.0   # CVE-2024-4340
 redis[hiredis]
 requests >= 2.32.0 # CVE-2024-35195
 slack-sdk
