@@ -202,8 +202,6 @@ def test_inventory_update_injected_content(this_kind, inventory, fake_credential
     ExecutionEnvironment.objects.create(name='Default Job EE', managed=False)
 
     injector = InventorySource.injectors[this_kind]
-    if injector.plugin_name in (None, 'constructed'):
-        pytest.skip('Use of inventory plugin is not enabled for this source')
 
     src_vars = dict(base_source_var='value_of_var')
     src_vars['plugin'] = injector.get_proper_name()
