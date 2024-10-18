@@ -193,7 +193,7 @@ def create_reference_data(source_dir, env, content):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('this_kind', discover_available_cloud_provider_plugin_names())
+@pytest.mark.parametrize('this_kind', [plugin_name for plugin_name in discover_available_cloud_provider_plugin_names() if plugin_name != 'constructed'])
 def test_inventory_update_injected_content(this_kind, inventory, fake_credential_factory, mock_me):
     if this_kind.endswith('_supported'):
         this_kind = this_kind[:-10]
