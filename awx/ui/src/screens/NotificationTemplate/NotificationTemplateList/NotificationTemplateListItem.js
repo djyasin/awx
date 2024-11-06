@@ -121,11 +121,11 @@ function NotificationTemplateListItem({
           {NOTIFICATION_TYPES[template.notification_type] ||
             template.notification_type}
         </Td>
-        <Td dataLabel={t`Oragnization`}>
+        <Td dataLabel={t`Organization`}>
           <Link
-            to={`/organizations/${template.summary_fields.organization.id}/details`}
+            to={`/organizations/${template.summary_fields?.organization?.id}/details`}
           >
-            <b>{template.summary_fields.organization.name}</b>
+            <b>{template.summary_fields?.organization?.name}</b>
           </Link>
         </Td>
         <ActionsTd dataLabel={t`Actions`}>
