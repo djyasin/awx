@@ -20,6 +20,7 @@ from django.urls import reverse, resolve
 from awx.main.utils.named_url_graph import generate_graph, GraphNode
 from awx.conf import fields, register
 from awx.main.utils.profiling import AWXProfiler
+from awx.main.utils.named_url_graph import reset_counters
 
 
 logger = logging.getLogger('awx.main.middleware')
@@ -154,6 +155,7 @@ class URLModificationMiddleware(MiddlewareMixin):
     @classmethod
     def _named_url_to_pk(cls, node, resource, named_url):
         kwargs = {}
+        reset_counters()
         if node.populate_named_url_query_kwargs(kwargs, named_url):
             match = node.model.objects.filter(**kwargs).first()
             if match:

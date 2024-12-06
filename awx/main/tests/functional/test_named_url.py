@@ -227,3 +227,50 @@ def test_403_vs_404(get):
 
     get(f'/api/v2/users/{cindy.pk}/', expect=401)
     get('/api/v2/users/cindy/', expect=404)
+
+
+@pytest.mark.django_db
+class TestConvertNamedUrl:
+    @pytest.mark.parametrize(
+        "url",
+        (
+            "/api/",
+            "/api/v2/",
+            "/api/v2/hosts/",
+            "/api/v2/hosts/1/",
+            "/api/v2/organizations/1/inventories/",
+            "/api/foo/",
+            "/api/foo/v2/",
+            "/api/foo/v2/organizations/",
+            "/api/foo/v2/organizations/1/",
+            "/api/foo/v2/organizations/1/inventories/",
+            "/api/foobar/",
+            "/api/foobar/v2/",
+            "/api/foobar/v2/organizations/",
+            "/api/foobar/v2/organizations/1/",
+            "/api/foobar/v2/organizations/1/inventories/",
+            "/api/foobar/v2/organizations/1/inventories/",
+        ),
+    )
+    def test_noop(self, url, settings):
+        settings.OPTIONAL_API_URLPATTERN_PREFIX = ''
+        assert URLModificationMiddleware._convert_named_url(url) == url
+
+        settings.OPTIONAL_API_URLPATTERN_PREFIX = 'foo'
+        assert URLModificationMiddleware._convert_named_url(url) == url
+
+    def test_named_org(self):
+        test_org = Organization.objects.create(name='test_org')
+
+        assert URLModificationMiddleware._convert_named_url('/api/v2/organizations/test_org/') == f'/api/v2/organizations/{test_org.pk}/'
+
+    def test_named_job_template(self):
+        org = Organization.objects.create(name='test_org')
+        tpl = JobTemplate.objects.create(name='test_tpl', organization=org)
+
+        # first, cause a '404' - we want to verify that no state from previous requests is carried over when named
+        # urls are resolved
+        assert URLModificationMiddleware._convert_named_url('/api/v2/job_templates/test/tpl++test_org/') == '/api/v2/job_templates/test/tpl++test_org/'
+
+        # try to resolve a valid url - it should succeed
+        assert URLModificationMiddleware._convert_named_url('/api/v2/job_templates/test_tpl++test_org/') == f'/api/v2/job_templates/{tpl.pk}/'
