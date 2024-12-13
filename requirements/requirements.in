@@ -13,7 +13,7 @@ cryptography>=41.0.6  # CVE-2023-49083
 Cython<3 # Since the bump to PyYAML 5.4.1 this is now a mandatory dep
 daphne
 distro
-django==4.2.16  # CVE-2024-45230
+django==4.2.17  # CVE-2024-53908
 django-auth-ldap
 django-cors-headers
 django-crum
