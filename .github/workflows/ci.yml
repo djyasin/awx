@@ -121,7 +121,7 @@ jobs:
 
       # The containers that GitHub Actions use have Ansible installed, so upgrade to make sure we have the latest version.
       - name: Upgrade ansible-core
-        run: python3 -m pip install --upgrade ansible-core
+        run: python3 -m pip install --upgrade 'ansible-core<2.18.0'
 
       - name: Run sanity tests
         run: make test_collection_sanity
@@ -190,7 +190,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Upgrade ansible-core
-        run: python3 -m pip install --upgrade ansible-core
+        run: python3 -m pip install --upgrade 'ansible-core<2.18.0'
 
       - name: Download coverage artifacts
         uses: actions/download-artifact@v3
