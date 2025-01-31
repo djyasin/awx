@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL([("DROP TABLE IF EXISTS {} CASCADE;".format(table))])
+        migrations.RunSQL(["DROP TABLE IF EXISTS {} CASCADE;".format(table)])
         for table in (
             'celery_taskmeta',
             'celery_tasksetmeta',
