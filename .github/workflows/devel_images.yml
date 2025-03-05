@@ -43,6 +43,15 @@ jobs:
           docker pull ghcr.io/${OWNER_LC}/awx_kube_devel:${GITHUB_REF##*/} || :
           docker pull ghcr.io/${OWNER_LC}/awx:${GITHUB_REF##*/} || :
 
+      - name: Setup node and npm for the new UI build
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Prebuild new UI for awx image (to speed up build process)
+        run: |
+          make ui-next
+
       - name: Build images
         run: |
           DEV_DOCKER_TAG_BASE=ghcr.io/${OWNER_LC} COMPOSE_TAG=${GITHUB_REF##*/} make docker-compose-build
