@@ -5,11 +5,16 @@ import useThrottle from 'hooks/useThrottle';
 import { parseQueryString } from 'util/qs';
 import sortJobs from './sortJobs';
 
-export default function useWsJobs(initialJobs, fetchJobsById, qsConfig) {
+export default function useWsJobs(
+  initialJobs,
+  fetchJobsById,
+  qsConfig,
+  timeout = 5000
+) {
   const location = useLocation();
   const [jobs, setJobs] = useState(initialJobs);
   const [jobsToFetch, setJobsToFetch] = useState([]);
-  const throttledJobsToFetch = useThrottle(jobsToFetch, 5000);
+  const throttledJobsToFetch = useThrottle(jobsToFetch, timeout);
   const lastMessage = useWebsocket({
     jobs: ['status_changed'],
     schedules: ['changed'],

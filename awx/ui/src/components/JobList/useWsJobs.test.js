@@ -9,7 +9,7 @@ function TestInner() {
 }
 function Test({ jobs, fetch }) {
   const qsConfig = {};
-  const syncedJobs = useWsJobs(jobs, fetch, qsConfig);
+  const syncedJobs = useWsJobs(jobs, fetch, qsConfig, 50);
   return <TestInner jobs={syncedJobs} />;
 }
 
@@ -123,7 +123,18 @@ describe('useWsJobs hook', () => {
       );
     });
 
+    await act(async () => {
+      await wait(50);
+    });
+
     expect(fetch).toHaveBeenCalledWith([2]);
+    console.log('clean');
     WS.clean();
   });
 });
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}

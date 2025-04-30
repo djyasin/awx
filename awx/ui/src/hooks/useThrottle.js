@@ -6,7 +6,7 @@ export default function useThrottle(value, limit) {
   const initialValue = useRef(value);
 
   useEffect(() => {
-    if (value !== initialValue.current) {
+    if (value === initialValue.current) {
       setThrottledValue(value);
       return () => {};
     }

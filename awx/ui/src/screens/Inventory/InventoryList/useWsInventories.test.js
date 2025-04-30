@@ -146,6 +146,10 @@ describe('useWsInventories hook', () => {
       );
     });
 
+    await act(async () => {
+      await wait(5000);
+    });
+
     expect(fetchInventoriesById).toHaveBeenCalledWith([1]);
   });
 
@@ -218,3 +222,9 @@ describe('useWsInventories hook', () => {
     expect(fetchInventories).toHaveBeenCalled();
   });
 });
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}

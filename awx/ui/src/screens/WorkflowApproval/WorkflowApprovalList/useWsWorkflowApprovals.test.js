@@ -101,6 +101,10 @@ describe('useWsWorkflowApprovals hook', () => {
       );
     });
 
+    await act(async () => {
+      await wait(1000);
+    });
+
     expect(fetchWorkflowApprovals).toHaveBeenCalledTimes(1);
   });
 
@@ -127,6 +131,10 @@ describe('useWsWorkflowApprovals hook', () => {
           status: 'successful',
         })
       );
+    });
+
+    await act(async () => {
+      await wait(1000);
     });
 
     expect(fetchWorkflowApprovals).toHaveBeenCalledTimes(1);
@@ -160,3 +168,9 @@ describe('useWsWorkflowApprovals hook', () => {
     expect(fetchWorkflowApprovals).toHaveBeenCalledTimes(0);
   });
 });
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}

@@ -87,6 +87,10 @@ describe('useWsPendingApprovalCount hook', () => {
       );
     });
 
+    await act(async () => {
+      await wait(1000);
+    });
+
     expect(fetchApprovalsCount).toHaveBeenCalledTimes(1);
   });
 
@@ -114,3 +118,9 @@ describe('useWsPendingApprovalCount hook', () => {
     expect(fetchApprovalsCount).toHaveBeenCalledTimes(0);
   });
 });
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
