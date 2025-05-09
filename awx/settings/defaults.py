@@ -1081,3 +1081,8 @@ CLEANUP_HOST_METRICS_HARD_THRESHOLD = 36  # months
 # Host metric summary monthly task - last time of run
 HOST_METRIC_SUMMARY_TASK_LAST_TS = None
 HOST_METRIC_SUMMARY_TASK_INTERVAL = 7  # days
+
+# Dispatcher worker lifetime. If set to None, workers will never be retired
+# based on age. Note workers will finish their last task before retiring if
+# they are busy when they reach retirement age.
+WORKER_MAX_LIFETIME_SECONDS = 14400  # seconds
