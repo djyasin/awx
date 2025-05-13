@@ -17,8 +17,10 @@ describe('<SubscriptionStep />', () => {
             manifest_filename: '',
             pendo: false,
             subscription: null,
-            password: '',
-            username: '',
+            client_id: '',
+            client_secret: '',
+            redhat_password: '',
+            redhat_username: '',
           }}
         >
           <SubscriptionStep />
@@ -90,31 +92,33 @@ describe('<SubscriptionStep />', () => {
     );
   });
 
-  test('Username/password toggle button should show username credential fields', async () => {
+  test('Service Account / Red Hat Satellite toggle button should show credential fields', async () => {
     expect(wrapper.find('ToggleGroupItem').last().props().isSelected).toBe(
       false
     );
     wrapper
-      .find('ToggleGroupItem[text="Username / password"] button')
+      .find(
+        'ToggleGroupItem[text="Service Account / Red Hat Satellite"] button'
+      )
       .simulate('click');
     wrapper.update();
     expect(wrapper.find('ToggleGroupItem').last().props().isSelected).toBe(
       true
     );
     await act(async () => {
-      wrapper.find('input#username-field').simulate('change', {
-        target: { value: 'username-cred', name: 'username' },
+      wrapper.find('input#client-id-field').simulate('change', {
+        target: { value: 'dummyid', name: 'client_id' },
       });
-      wrapper.find('input#password-field').simulate('change', {
-        target: { value: 'password-cred', name: 'password' },
+      wrapper.find('input#client-secret-field').simulate('change', {
+        target: { value: 'dummysecret', name: 'client_secret' },
       });
     });
     wrapper.update();
-    expect(wrapper.find('input#username-field').prop('value')).toEqual(
-      'username-cred'
+    expect(wrapper.find('input#client-id-field').prop('value')).toEqual(
+      'dummyid'
     );
-    expect(wrapper.find('input#password-field').prop('value')).toEqual(
-      'password-cred'
+    expect(wrapper.find('input#client-secret-field').prop('value')).toEqual(
+      'dummysecret'
     );
   });
 });

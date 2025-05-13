@@ -40,17 +40,17 @@ function SubscriptionModal({
     result: subscriptions,
   } = useRequest(
     useCallback(async () => {
-      if (!subscriptionCreds.username || !subscriptionCreds.password) {
+      if (!subscriptionCreds.clientId || !subscriptionCreds.clientSecret) {
         return [];
       }
       const { data } = await ConfigAPI.readSubscriptions(
-        subscriptionCreds.username,
-        subscriptionCreds.password
+        subscriptionCreds.clientId,
+        subscriptionCreds.clientSecret
       );
 
       // Ensure unique ids for each subscription
       // because it is possible to have multiple
-      // subscriptions with the same pool_id
+      // subscriptions with the same subscription_id
       let repeatId = 1;
       data.forEach((i) => {
         i.id = repeatId++;
@@ -153,7 +153,7 @@ function SubscriptionModal({
               <Tr
                 key={`row-${subscription.id}`}
                 id={`row-${subscription.id}`}
-                ouiaId={`subscription-row-${subscription.pool_id}`}
+                ouiaId={`subscription-row-${subscription.subscription_id}`}
               >
                 <Td
                   select={{

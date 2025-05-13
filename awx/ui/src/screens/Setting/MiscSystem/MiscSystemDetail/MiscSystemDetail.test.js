@@ -33,8 +33,8 @@ describe('<MiscSystemDetail />', () => {
         LICENSE: null,
         REDHAT_USERNAME: 'name1',
         REDHAT_PASSWORD: '$encrypted$',
-        SUBSCRIPTIONS_USERNAME: 'name2',
-        SUBSCRIPTIONS_PASSWORD: '$encrypted$',
+        SUBSCRIPTIONS_CLIENT_ID: 'name2',
+        SUBSCRIPTIONS_CLIENT_SECRET: '$encrypted$',
         AUTOMATION_ANALYTICS_URL: 'https://example.com',
         INSTALL_UUID: 'db39b9ec-0c6e-4554-987d-42aw9c732ed8',
         DEFAULT_EXECUTION_ENVIRONMENT: 1,
@@ -103,10 +103,14 @@ describe('<MiscSystemDetail />', () => {
     );
     assertDetail(wrapper, 'Enable Activity Stream', 'On');
     assertDetail(wrapper, 'Enable Activity Stream for Inventory Sync', 'Off');
-    assertDetail(wrapper, 'Red Hat customer password', 'Encrypted');
-    assertDetail(wrapper, 'Red Hat customer username', 'name1');
-    assertDetail(wrapper, 'Red Hat or Satellite password', 'Encrypted');
-    assertDetail(wrapper, 'Red Hat or Satellite username', 'name2');
+    assertDetail(wrapper, 'Red Hat Client Secret for Analytics', 'Encrypted');
+    assertDetail(wrapper, 'Red Hat Client ID for Analytics', 'name1');
+    assertDetail(
+      wrapper,
+      'Red Hat Client Secret for Subscriptions',
+      'Encrypted'
+    );
+    assertDetail(wrapper, 'Red Hat Client ID for Subscriptions', 'name2');
     assertVariableDetail(
       wrapper,
       'Last gathered entries from the data collection service of Automation Analytics',

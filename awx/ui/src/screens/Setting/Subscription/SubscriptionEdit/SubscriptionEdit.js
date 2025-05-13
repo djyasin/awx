@@ -133,7 +133,9 @@ function SubscriptionEdit() {
           manifest: form.manifest_file,
         });
       } else if (form.subscription) {
-        await ConfigAPI.attach({ pool_id: form.subscription.pool_id });
+        await ConfigAPI.attach({
+          subscription_id: form.subscription.subscription_id,
+        });
       }
 
       if (!hasValidKey) {
@@ -147,13 +149,26 @@ function SubscriptionEdit() {
           });
         }
 
+        let redhatCredentials = {};
+        if (form.redhat_username) {
+          redhatCredentials = { REDHAT_USERNAME: form.redhat_username };
+        }
+        if (form.redhat_password) {
+          redhatCredentials = {
+            ...redhatCredentials,
+            REDHAT_PASSWORD: form.redhat_password,
+          };
+        }
+
         if (form.insights) {
           await SettingsAPI.updateCategory('system', {
             INSIGHTS_TRACKING_STATE: true,
+            ...redhatCredentials,
           });
         } else {
           await SettingsAPI.updateCategory('system', {
             INSIGHTS_TRACKING_STATE: false,
+            ...redhatCredentials,
           });
         }
       }
@@ -222,8 +237,10 @@ function SubscriptionEdit() {
           manifest_filename: '',
           pendo: true,
           subscription: null,
-          password: '',
-          username: '',
+          client_id: '',
+          client_secret: '',
+          redhat_password: '',
+          redhat_username: '',
         }}
         onSubmit={handleSubmit}
       >

@@ -47,8 +47,8 @@ function MiscSystemEdit() {
         'ORG_ADMINS_CAN_SEE_ALL_USERS',
         'REDHAT_USERNAME',
         'REDHAT_PASSWORD',
-        'SUBSCRIPTIONS_USERNAME',
-        'SUBSCRIPTIONS_PASSWORD',
+        'SUBSCRIPTIONS_CLIENT_ID',
+        'SUBSCRIPTIONS_CLIENT_SECRET',
         'REMOTE_HOST_HEADERS',
         'TOWER_URL_BASE',
         'DEFAULT_EXECUTION_ENVIRONMENT',
@@ -207,12 +207,12 @@ function MiscSystemEdit() {
                   config={system.REDHAT_PASSWORD}
                 />
                 <InputField
-                  name="SUBSCRIPTIONS_USERNAME"
-                  config={system.SUBSCRIPTIONS_USERNAME}
+                  name="SUBSCRIPTIONS_CLIENT_ID"
+                  config={system.SUBSCRIPTIONS_CLIENT_ID}
                 />
                 <EncryptedField
-                  name="SUBSCRIPTIONS_PASSWORD"
-                  config={system.SUBSCRIPTIONS_PASSWORD}
+                  name="SUBSCRIPTIONS_CLIENT_SECRET"
+                  config={system.SUBSCRIPTIONS_CLIENT_SECRET}
                 />
                 <InputField
                   name="AUTOMATION_ANALYTICS_URL"

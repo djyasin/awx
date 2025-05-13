@@ -14,8 +14,8 @@ function AnalyticsStep() {
   const config = useConfig();
   const [manifest] = useField('manifest_file');
   const [insights] = useField('insights');
-  const [, , usernameHelpers] = useField('username');
-  const [, , passwordHelpers] = useField('password');
+  const [, , usernameHelpers] = useField('redhat_username');
+  const [, , passwordHelpers] = useField('redhat_password');
   const requireCredentialFields = manifest.value && insights.value;
 
   useEffect(() => {
@@ -87,20 +87,20 @@ function AnalyticsStep() {
             </Trans>
           </p>
           <FormField
-            id="username-field"
+            id="rh-client-id-field"
             isDisabled={!config.me.is_superuser}
             isRequired={requireCredentialFields}
-            label={t`Username`}
-            name="username"
+            label={t`Red Hat Client ID for Analytics`}
+            name="redhat_username"
             type="text"
             validate={required(null)}
           />
           <PasswordField
-            id="password-field"
+            id="rh-client-secret-field"
             isDisabled={!config.me.is_superuser}
             isRequired={requireCredentialFields}
-            label={t`Password`}
-            name="password"
+            label={t`Red Hat Client Secret for Analytics`}
+            name="redhat_password"
             validate={required(null)}
           />
         </>

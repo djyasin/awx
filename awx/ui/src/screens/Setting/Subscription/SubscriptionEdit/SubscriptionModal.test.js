@@ -21,19 +21,19 @@ describe('<SubscriptionModal />', () => {
           subscription_name: 'mock A',
           instance_count: 100,
           license_date: 1714000271,
-          pool_id: 7,
+          subscription_id: 7,
         },
         {
           subscription_name: 'mock B',
           instance_count: 200,
           license_date: 1714000271,
-          pool_id: 8,
+          subscription_id: 8,
         },
         {
           subscription_name: 'mock C',
           instance_count: 30,
           license_date: 1714000271,
-          pool_id: 9,
+          subscription_id: 9,
         },
       ],
     });
@@ -41,8 +41,8 @@ describe('<SubscriptionModal />', () => {
       wrapper = mountWithContexts(
         <SubscriptionModal
           subscriptionCreds={{
-            username: 'admin',
-            password: '$encrypted',
+            clientId: 'admin',
+            clientSecret: '$encrypted',
           }}
           onConfirm={onConfirm}
           onClose={onClose}
@@ -121,8 +121,8 @@ describe('<SubscriptionModal />', () => {
       wrapper = mountWithContexts(
         <SubscriptionModal
           subscriptionCreds={{
-            username: 'admin',
-            password: '$encrypted',
+            clientId: 'admin',
+            clientSecret: '$encrypted',
           }}
           selectedSubscription={{
             id: 2,
@@ -143,8 +143,8 @@ describe('<SubscriptionModal />', () => {
       wrapper = mountWithContexts(
         <SubscriptionModal
           subscriptionCreds={{
-            username: 'admin',
-            password: '$encrypted',
+            clientId: 'admin',
+            clientSecret: '$encrypted',
           }}
         />
       );

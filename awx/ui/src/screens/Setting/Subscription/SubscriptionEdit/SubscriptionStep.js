@@ -14,6 +14,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
   Tooltip,
+  Alert,
 } from '@patternfly/react-core';
 import { useConfig } from 'contexts/Config';
 import getDocsBaseUrl from 'util/getDocsBaseUrl';
@@ -44,8 +45,9 @@ function SubscriptionStep() {
   const [manifestFilename, , manifestFilenameHelpers] =
     useField('manifest_filename');
   const [subscription, , subscriptionHelpers] = useField('subscription');
-  const [username, usernameMeta, usernameHelpers] = useField('username');
-  const [password, passwordMeta, passwordHelpers] = useField('password');
+  const [clientId, clientIdMeta, clientIdHelpers] = useField('client_id');
+  const [clientSecret, clientSecretMeta, clientSecretHelpers] =
+    useField('client_secret');
 
   return (
     <Flex
@@ -86,7 +88,7 @@ function SubscriptionStep() {
           id="subscription-manifest"
         />
         <ToggleGroupItem
-          text={t`Username / password`}
+          text={t`Service Account / Red Hat Satellite`}
           isSelected={isSelected === 'selectSubscription'}
           onChange={() => setIsSelected('selectSubscription')}
           id="username-password"
@@ -169,8 +171,8 @@ function SubscriptionStep() {
                 if (!value) {
                   manifestHelpers.setValue(null);
                   manifestFilenameHelpers.setValue('');
-                  usernameHelpers.setValue(usernameMeta.initialValue);
-                  passwordHelpers.setValue(passwordMeta.initialValue);
+                  clientIdHelpers.setValue(clientIdMeta.initialValue);
+                  clientSecretHelpers.setValue(clientSecretMeta.initialValue);
                   return;
                 }
 
@@ -197,6 +199,32 @@ function SubscriptionStep() {
                  The credentials you use will be stored for future use in
                  retrieving renewal or expanded subscriptions.`}
           </p>
+          <Alert
+            variant="info"
+            isInline
+            title={t`Input client ID and client secret or username and password`}
+          >
+            <p>
+              {t`Ansible subscriptions now require a service account from HCC. You must`}
+              <a
+                href="https://console.redhat.com/iam/service-accounts"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {' '}
+                {t`create a service account here`}{' '}
+              </a>
+              {t`and use the client ID and client secret to replace your username and password when logging in. For Red Hat Satellite, input your username and password in the fields below. Please see this`}{' '}
+              <a
+                href="https://access.redhat.com/articles/7112649"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t`Knowledgebase article`}{' '}
+              </a>
+              {t`for more information.`}
+            </p>
+          </Alert>
           <Flex
             direction={{ default: 'column', md: 'row' }}
             spaceItems={{ default: 'spaceItemsMd' }}
@@ -204,16 +232,16 @@ function SubscriptionStep() {
             fullWidth={{ default: 'fullWidth' }}
           >
             <FormField
-              id="username-field"
-              label={t`Username`}
-              name="username"
+              id="client-id-field"
+              label={t`Client ID / Satellite username`}
+              name="client_id"
               type="text"
               isDisabled={!config.me.is_superuser}
             />
             <PasswordField
-              id="password-field"
-              name="password"
-              label={t`Password`}
+              id="client-secret-field"
+              name="client_secret"
+              label={t`Client secret / Satellite password`}
               isDisabled={!config.me.is_superuser}
             />
             <Button
@@ -221,15 +249,15 @@ function SubscriptionStep() {
               ouiaId="subscription-modal-button"
               onClick={toggleModal}
               style={{ maxWidth: 'fit-content' }}
-              isDisabled={!(username.value && password.value)}
+              isDisabled={!(clientId.value && clientSecret.value)}
             >
               {t`Get subscription`}
             </Button>
             {isModalOpen && (
               <SubscriptionModal
                 subscriptionCreds={{
-                  username: username.value,
-                  password: password.value,
+                  clientId: clientId.value,
+                  clientSecret: clientSecret.value,
                 }}
                 selectedSubscription={subscription?.value}
                 onClose={closeModal}

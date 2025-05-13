@@ -7,10 +7,10 @@ class Config extends Base {
     this.read = this.read.bind(this);
   }
 
-  readSubscriptions(username, password) {
+  readSubscriptions(clientId, clientSecret) {
     return this.http.post(`${this.baseUrl}subscriptions/`, {
-      subscriptions_username: username,
-      subscriptions_password: password,
+      subscriptions_client_id: clientId,
+      subscriptions_client_secret: clientSecret,
     });
   }
 

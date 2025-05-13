@@ -17,8 +17,8 @@ describe('<AnalyticsStep />', () => {
             manifest_filename: '',
             pendo: false,
             subscription: null,
-            password: '',
-            username: '',
+            redhat_password: '',
+            redhat_username: '',
           }}
         >
           <AnalyticsStep />

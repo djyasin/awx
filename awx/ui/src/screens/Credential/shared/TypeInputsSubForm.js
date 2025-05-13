@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { t } from '@lingui/macro';
-import { FormGroup, Title } from '@patternfly/react-core';
+import { t, Trans } from '@lingui/macro';
+import { Alert, FormGroup, Title } from '@patternfly/react-core';
 import {
   FormCheckboxLayout,
   FormColumnLayout,
@@ -25,6 +25,28 @@ function TypeInputsSubForm({ credentialType }) {
         {t`Type Details`}
       </Title>
       <FormColumnLayout>
+        {credentialType?.kind === 'insights' && (
+          <FormFullWidthLayout>
+            <Alert
+              variant="info"
+              isInline
+              title={t`Input username and password or client ID and client secret.`}
+            >
+              <Trans>
+                Enter your client ID and client secret to create your Insights
+                credential. See this{' '}
+                <a
+                  href="https://access.redhat.com/articles/7108804"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <strong>Knowledgebase article</strong>
+                </a>{' '}
+                for more detail.
+              </Trans>
+            </Alert>
+          </FormFullWidthLayout>
+        )}
         {credentialType.namespace === 'gce' && <GceFileUploadField />}
         {stringFields.map((fieldOptions) =>
           fieldOptions.multiline ? (

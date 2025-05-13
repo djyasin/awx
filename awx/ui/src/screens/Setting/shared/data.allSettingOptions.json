@@ -95,8 +95,8 @@
           "REDHAT_USERNAME": {
               "type": "string",
               "required": false,
-              "label": "Red Hat customer username",
-              "help_text": "This username is used to send data to Automation Analytics",
+              "label": "Red Hat Client ID for Analytics",
+              "help_text": "Client ID used to send data to Automation Analytics",
               "category": "System",
               "category_slug": "system",
               "default": ""
@@ -104,26 +104,26 @@
           "REDHAT_PASSWORD": {
               "type": "string",
               "required": false,
-              "label": "Red Hat customer password",
-              "help_text": "This password is used to send data to Automation Analytics",
+              "label": "Red Hat Client Secret for Analytics",
+              "help_text": "Client secret used to send data to Automation Analytics",
               "category": "System",
               "category_slug": "system",
               "default": ""
           },
-          "SUBSCRIPTIONS_USERNAME": {
+          "SUBSCRIPTIONS_CLIENT_ID": {
               "type": "string",
               "required": false,
-              "label": "Red Hat or Satellite username",
-              "help_text": "This username is used to retrieve subscription and content information",
+              "label": "Red Hat Client ID for Subscriptions",
+              "help_text": "Client ID used to retrieve subscription and content information",
               "category": "System",
               "category_slug": "system",
               "default": ""
           },
-          "SUBSCRIPTIONS_PASSWORD": {
+          "SUBSCRIPTIONS_CLIENT_SECRET": {
               "type": "string",
               "required": false,
-              "label": "Red Hat or Satellite password",
-              "help_text": "This password is used to retrieve subscription and content information",
+              "label": "Red Hat Client Secret for Subscriptions",
+              "help_text": "Client secret used to retrieve subscription and content information",
               "category": "System",
               "category_slug": "system",
               "default": ""
@@ -4534,32 +4534,32 @@
           },
           "REDHAT_USERNAME": {
               "type": "string",
-              "label": "Red Hat customer username",
-              "help_text": "This username is used to send data to Automation Analytics",
+              "label": "Red Hat Client ID for Analytics",
+              "help_text": "Client ID used to send data to Automation Analytics",
               "category": "System",
               "category_slug": "system",
               "defined_in_file": false
           },
           "REDHAT_PASSWORD": {
               "type": "string",
-              "label": "Red Hat customer password",
-              "help_text": "This password is used to send data to Automation Analytics",
+              "label": "Red Hat Client Secret for Analytics",
+              "help_text": "Client secret used to send data to Automation Analytics",
               "category": "System",
               "category_slug": "system",
               "defined_in_file": false
           },
-          "SUBSCRIPTIONS_USERNAME": {
+          "SUBSCRIPTIONS_CLIENT_ID": {
               "type": "string",
-              "label": "Red Hat or Satellite username",
-              "help_text": "This username is used to retrieve subscription and content information",
+              "label": "Red Hat Client ID for Subscriptions",
+              "help_text": "Client ID used to retrieve subscription and content information",
               "category": "System",
               "category_slug": "system",
               "defined_in_file": false
           },
-          "SUBSCRIPTIONS_PASSWORD": {
+          "SUBSCRIPTIONS_CLIENT_SECRET": {
               "type": "string",
-              "label": "Red Hat or Satellite password",
-              "help_text": "This password is used to retrieve subscription and content information",
+              "label": "Red Hat Client Secret for Subscriptions",
+              "help_text": "Client secret used to retrieve subscription and content information",
               "category": "System",
               "category_slug": "system",
               "defined_in_file": false

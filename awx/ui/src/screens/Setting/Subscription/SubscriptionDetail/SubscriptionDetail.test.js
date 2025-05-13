@@ -20,7 +20,7 @@ const config = {
     instance_count: 1001,
     license_date: '1614401999',
     license_type: 'enterprise',
-    pool_id: '123',
+    subscription_id: '123',
     product_name: 'Red Hat Ansible Automation, Standard (5000 Managed Nodes)',
     satellite: false,
     sku: 'ABC',

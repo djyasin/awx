@@ -24,7 +24,7 @@ const mockConfig = {
     instance_count: 1001,
     license_date: '1614401999',
     license_type: 'enterprise',
-    pool_id: '123',
+    subscription_id: '123',
     product_name: 'Red Hat Ansible Automation, Standard (5000 Managed Nodes)',
     satellite: false,
     sku: 'ABC',
@@ -108,7 +108,7 @@ describe('<SubscriptionEdit />', () => {
         true
       );
       expect(wrapper.find('ToggleGroupItem').last().text()).toBe(
-        'Username / password'
+        'Service Account / Red Hat Satellite'
       );
       expect(wrapper.find('ToggleGroupItem').last().props().isSelected).toBe(
         false
@@ -147,8 +147,8 @@ describe('<SubscriptionEdit />', () => {
     });
 
     test('deselecting insights checkbox should hide username and password fields', async () => {
-      expect(wrapper.find('input#username-field')).toHaveLength(1);
-      expect(wrapper.find('input#password-field')).toHaveLength(1);
+      expect(wrapper.find('input#rh-client-id-field')).toHaveLength(1);
+      expect(wrapper.find('input#rh-client-secret-field')).toHaveLength(1);
       await act(async () => {
         wrapper.find('Checkbox[name="pendo"] input').simulate('change', {
           target: { value: false, name: 'pendo' },
@@ -158,8 +158,8 @@ describe('<SubscriptionEdit />', () => {
         });
       });
       wrapper.update();
-      expect(wrapper.find('input#username-field')).toHaveLength(0);
-      expect(wrapper.find('input#password-field')).toHaveLength(0);
+      expect(wrapper.find('input#rh-client-id-field')).toHaveLength(0);
+      expect(wrapper.find('input#rh-client-secret-field')).toHaveLength(0);
     });
 
     test('clicking next button should show eula step', async () => {
@@ -213,8 +213,8 @@ describe('<SubscriptionEdit />', () => {
     beforeAll(async () => {
       SettingsAPI.readCategory = async () => ({
         data: {
-          SUBSCRIPTIONS_PASSWORD: 'mock_password',
-          SUBSCRIPTIONS_USERNAME: 'mock_username',
+          SUBSCRIPTIONS_CLIENT_SECRET: 'mock_password',
+          SUBSCRIPTIONS_CLIENT_ID: 'mock_username',
           INSIGHTS_TRACKING_STATE: false,
           PENDO: 'off',
         },
@@ -225,7 +225,7 @@ describe('<SubscriptionEdit />', () => {
             subscription_name: 'mock subscription 50 instances',
             instance_count: 50,
             license_date: new Date(),
-            pool_id: 999,
+            subscription_id: 999,
           },
         ],
       });
@@ -263,33 +263,37 @@ describe('<SubscriptionEdit />', () => {
       ).toBe(1);
     });
 
-    test('Username/password toggle button should show username credential fields', async () => {
+    test('Service Account / Red Hat Satellite toggle button should show username credential fields', async () => {
       expect(wrapper.find('ToggleGroupItem').last().props().isSelected).toBe(
         false
       );
       wrapper
-        .find('ToggleGroupItem[text="Username / password"] button')
+        .find(
+          'ToggleGroupItem[text="Service Account / Red Hat Satellite"] button'
+        )
         .simulate('click');
       wrapper.update();
       expect(wrapper.find('ToggleGroupItem').last().props().isSelected).toBe(
         true
       );
-      expect(wrapper.find('input#username-field').prop('value')).toEqual('');
-      expect(wrapper.find('input#password-field').prop('value')).toEqual('');
+      expect(wrapper.find('input#client-id-field').prop('value')).toEqual('');
+      expect(wrapper.find('input#client-secret-field').prop('value')).toEqual(
+        ''
+      );
       await act(async () => {
-        wrapper.find('input#username-field').simulate('change', {
-          target: { value: 'username-cred', name: 'username' },
+        wrapper.find('input#client-id-field').simulate('change', {
+          target: { value: 'client-id-cred', name: 'client_id' },
         });
-        wrapper.find('input#password-field').simulate('change', {
-          target: { value: 'password-cred', name: 'password' },
+        wrapper.find('input#client-secret-field').simulate('change', {
+          target: { value: 'client-secret-cred', name: 'client_secret' },
         });
       });
       wrapper.update();
-      expect(wrapper.find('input#username-field').prop('value')).toEqual(
-        'username-cred'
+      expect(wrapper.find('input#client-id-field').prop('value')).toEqual(
+        'client-id-cred'
       );
-      expect(wrapper.find('input#password-field').prop('value')).toEqual(
-        'password-cred'
+      expect(wrapper.find('input#client-secret-field').prop('value')).toEqual(
+        'client-secret-cred'
       );
     });
 
