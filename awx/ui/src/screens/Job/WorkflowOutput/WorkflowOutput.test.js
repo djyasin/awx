@@ -1,10 +1,14 @@
-import React from 'react';
-import { act } from 'react-dom/test-utils';
 import { WorkflowJobsAPI } from 'api';
+import WS from 'jest-websocket-mock';
+import { act } from 'react-dom/test-utils';
 import { mountWithContexts } from '../../../../testUtils/enzymeHelpers';
 import WorkflowOutput from './WorkflowOutput';
 
 jest.mock('../../../api');
+jest.mock('../../../hooks/useThrottle', () => ({
+  __esModule: true,
+  default: jest.fn((val) => val),
+}));
 
 const job = {
   id: 1,
@@ -148,4 +152,67 @@ describe('WorkflowOutput', () => {
     wrapper.update();
     expect(wrapper.find('ContentError')).toHaveLength(1);
   });
+  test('should establish websocket connection', async () => {
+    global.document.cookie = 'csrftoken=abc123';
+    const mockServer = new WS('ws://localhost/websocket/');
+
+    await act(async () => {
+      wrapper = mountWithContexts(
+        <svg>
+          <WorkflowOutput job={job} />
+        </svg>
+      );
+    });
+    wrapper.update();
+
+    await mockServer.connected;
+    await expect(mockServer).toReceiveMessage(
+      JSON.stringify({
+        xrftoken: 'abc123',
+        groups: {
+          jobs: ['status_changed'],
+          control: ['limit_reached_1'],
+        },
+      })
+    );
+    WS.clean();
+  });
+
+  test('should refetch nodes after job status has changed', async () => {
+    global.document.cookie = 'csrftoken=abc123';
+    const mockServer = new WS('ws://localhost/websocket/');
+    const mockReadNodes = jest.spyOn(WorkflowJobsAPI, 'readNodes');
+    await act(async () => {
+      wrapper = mountWithContexts(
+        <svg>
+          <WorkflowOutput job={job} />
+        </svg>
+      );
+    });
+    wrapper.update();
+
+    await mockServer.connected;
+    await act(async () => {
+      mockServer.send(
+        JSON.stringify({
+          unified_job_id: 2,
+          type: 'job',
+          status: 'running',
+        })
+      );
+    });
+    wrapper.update();
+
+    await act(async () => {
+      await wait(500);
+    });
+
+    expect(mockReadNodes).toHaveBeenCalledTimes(1);
+  });
 });
+
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}

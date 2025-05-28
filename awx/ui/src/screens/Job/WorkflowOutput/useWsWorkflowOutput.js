@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import useWebsocket from 'hooks/useWebsocket';
 import { WorkflowJobsAPI } from 'api';
+import useThrottle from 'hooks/useThrottle';
+import useWebsocket from 'hooks/useWebsocket';
+import { useEffect, useState } from 'react';
 
 const fetchWorkflowNodes = async (jobId, pageNo = 1, nodes = []) => {
   const { data } = await WorkflowJobsAPI.readNodes(jobId, {
@@ -20,7 +21,7 @@ export default function useWsWorkflowOutput(workflowJobId, initialNodes) {
     jobs: ['status_changed'],
     control: ['limit_reached_1'],
   });
-
+  const throttledLastMessage = useThrottle(lastMessage, 500);
   useEffect(() => {
     setNodes(initialNodes);
   }, [initialNodes]);
@@ -52,9 +53,9 @@ export default function useWsWorkflowOutput(workflowJobId, initialNodes) {
       }
 
       if (
-        lastMessage?.unified_job_id === workflowJobId &&
+        throttledLastMessage?.unified_job_id === workflowJobId &&
         ['successful', 'failed', 'error', 'cancelled'].includes(
-          lastMessage.status
+          throttledLastMessage.status
         )
       ) {
         refreshNodeObjects();
@@ -62,22 +63,23 @@ export default function useWsWorkflowOutput(workflowJobId, initialNodes) {
         if (
           !nodes ||
           nodes.length === 0 ||
-          lastMessage?.workflow_job_id !== workflowJobId
+          throttledLastMessage?.workflow_job_id !== workflowJobId
         ) {
           return;
         }
 
         const index = nodes.findIndex(
           (node) =>
-            node?.originalNodeObject?.id === lastMessage.workflow_node_id
+            node?.originalNodeObject?.id ===
+            throttledLastMessage.workflow_node_id
         );
 
         if (index > -1) {
-          setNodes(updateNode(nodes, index, lastMessage));
+          setNodes(updateNode(nodes, index, throttledLastMessage));
         }
       }
     },
-    [lastMessage] // eslint-disable-line react-hooks/exhaustive-deps
+    [throttledLastMessage] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   return nodes;
