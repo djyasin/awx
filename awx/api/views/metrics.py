@@ -39,7 +39,9 @@ class MetricsView(APIView):
 
     def get(self, request):
         '''Show Metrics Details'''
-        if settings.ALLOW_METRICS_FOR_ANONYMOUS_USERS or request.user.is_superuser or request.user.is_system_auditor:
+
+        # AAP 2.5 ONLY - DO NOT FORWARD PORT: Changed from is_system_auditor to is_auditor for Platform Auditor support
+        if settings.ALLOW_METRICS_FOR_ANONYMOUS_USERS or request.user.is_superuser or request.user.is_auditor:
             metrics_to_show = ''
             if not request.query_params.get('subsystemonly', "0") == "1":
                 metrics_to_show += metrics().decode('UTF-8')

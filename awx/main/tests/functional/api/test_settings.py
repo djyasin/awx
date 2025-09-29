@@ -4,11 +4,36 @@
 
 # Python
 import pytest
+from unittest.mock import patch, MagicMock
 
 # AWX
 from awx.api.versioning import reverse
 from awx.conf.models import Setting
 from awx.conf.registry import settings_registry
+from awx.main.models import User, get_platform_auditor_role
+from ansible_base.rbac.models import RoleUserAssignment
+
+
+# AIA: Primarily AI, New content, Human-initiated, Reviewed, Claude (Anthropic AI) via Claude Code
+# AIA PAI Nc Hin R Claude Code - https://aiattribution.github.io/interpret-attribution
+@pytest.fixture(autouse=True)
+def mock_dab_service_id():
+    """Mock DAB service_id to prevent ServiceID.objects.first() errors"""
+    from django.conf import settings
+    import uuid
+
+    # Only apply mock if our test setting is enabled
+    if getattr(settings, 'MOCK_DAB_SERVICE_ID', False):
+        with patch('ansible_base.resource_registry.models.service_identifier.ServiceID.objects.first') as mock_first:
+            mock_service = MagicMock()
+            mock_service.pk = uuid.uuid4()  # Use proper UUID
+            mock_first.return_value = mock_service
+            yield
+    else:
+        yield
+
+
+# END AI Contribution
 
 TEST_GIF_LOGO = 'data:image/gif;base64,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'  # NOQA
 TEST_PNG_LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAjCAYAAAAaLGNkAAAAAXNSR0IB2cksfwAAAdVpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDUuNC4wIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iPgogICAgICAgICA8dGlmZjpDb21wcmVzc2lvbj4xPC90aWZmOkNvbXByZXNzaW9uPgogICAgICAgICA8dGlmZjpQaG90b21ldHJpY0ludGVycHJldGF0aW9uPjI8L3RpZmY6UGhvdG9tZXRyaWNJbnRlcnByZXRhdGlvbj4KICAgICAgICAgPHRpZmY6T3JpZW50YXRpb24+MTwvdGlmZjpPcmllbnRhdGlvbj4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+Cjl0tmoAAAHVSURBVFgJ7VZRsoMgDNTOu5E9U+/Ud6Z6JssGNg2oNKD90xkHCNnNkgTbYbieKwNXBn6bgSXQ4+16xi5UDiqDN3Pecr6+1fM5DHh7n1NEIPjjoRLKzOjG3qQ5dRtEy2LCjh/Gz2wDZE2nZYKkrxdn/kY9XQQkGCGqqDY5IgJFkEKgBCzDNGXhTKEye7boFRH6IPJj5EshiNCSjV4R4eSx7zhmR2tcdIuwmWiMeao7e0JHViZEWUI5aP8a9O+rx74D6sGEiJftiX3YeueIiFXg2KrhpqzjVC3dPZFYJZ7NOwwtNwM8R0UkLfH0sT5qck+OlkMq0BucKr0iWG7gpAQksD9esM1z3Lnf6SHjLh67nnKEGxC/iomWhByTeXOQJGHHcKxwHhHKnt1HIdYtmexkIb/HOURWTSJqn2gKMDG0bDUc/D0iAseovxUBoylmQCug6IVhSv+4DIeKI94jAr4AjiSEgQ25JYB+YWT9BZ94AM8erwgFkRifaArA6U0G5KT0m//z26REZuK9okgrT6VwE1jTHjbVzyNAyRwTEPOtuiex9FVBNZCkruaA4PZqFp1u8Rpww9/6rcK5y0EkAxRiZJt79PWOVYWGRE9pbJhavMengMflGyumk0akMsQnAAAAAElFTkSuQmCC'  # NOQA
@@ -390,3 +415,66 @@ def test_github_enterprise_settings(get, put, patch, delete, admin):
     response = get(url, user=admin, expect=200)
     assert response.data['SOCIAL_AUTH_GITHUB_ENTERPRISE_URL'] == ''
     assert response.data['SOCIAL_AUTH_GITHUB_ENTERPRISE_API_URL'] == ''
+
+
+# IMPORTANT: Platform Auditor tests for AAP 2.5 ONLY - DO NOT FORWARD PORT TO 2.6+
+# These tests verify Platform Auditor access to settings endpoints using is_auditor property
+
+
+# AIA: Primarily AI, New content, Human-initiated, Reviewed, Claude (Anthropic AI) via Claude Code
+# AIA PAI Nc Hin R Claude Code - https://aiattribution.github.io/interpret-attribution
+@pytest.mark.django_db
+def test_system_auditor_settings_access(get, alice, setup_managed_roles):
+    """Test that System Auditors can access settings endpoints."""
+    # Set user as system auditor
+    alice.is_system_auditor = True
+    alice.save()
+
+    # Should have read access to settings category list
+    url = reverse('api:setting_category_list')
+    response = get(url, user=alice, expect=200)
+    assert len(response.data['results']) > 0
+
+    # Should have read access to specific settings categories
+    url = reverse('api:setting_singleton_detail', kwargs={'category_slug': 'all'})
+    get(url, user=alice, expect=200)
+
+    url = reverse('api:setting_singleton_detail', kwargs={'category_slug': 'system'})
+    get(url, user=alice, expect=200)
+
+
+# AIA: Primarily AI, New content, Human-initiated, Reviewed, Claude (Anthropic AI) via Claude Code
+# AIA PAI Nc Hin R Claude Code - https://aiattribution.github.io/interpret-attribution
+@pytest.mark.django_db
+def test_platform_auditor_settings_access(get, setup_managed_roles):
+    """Test that Platform Auditors can access settings endpoints."""
+    # Create fresh user like working tests
+    user = User.objects.create(username='platform_auditor_user', email='platform@example.com')
+
+    # Assign Platform Auditor role
+    platform_role = get_platform_auditor_role()
+    RoleUserAssignment.objects.create(user=user, role_definition=platform_role)
+
+    # Clear cached property
+    if hasattr(user, '_is_platform_auditor'):
+        delattr(user, '_is_platform_auditor')
+
+    # Verify properties work (like working tests)
+    assert user.is_platform_auditor is True
+    assert user.is_auditor is True
+    assert user.is_system_auditor is False
+
+    # Should have read access to settings category list
+    url = reverse('api:setting_category_list')
+    response = get(url, user=user, expect=200)
+    assert len(response.data['results']) > 0
+
+    # Should have read access to specific settings categories
+    url = reverse('api:setting_singleton_detail', kwargs={'category_slug': 'all'})
+    get(url, user=user, expect=200)
+
+    url = reverse('api:setting_singleton_detail', kwargs={'category_slug': 'system'})
+    get(url, user=user, expect=200)
+
+
+# END AI Contribution

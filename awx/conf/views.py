@@ -1,6 +1,12 @@
 # Copyright (c) 2016 Ansible, Inc.
 # All Rights Reserved.
 
+# IMPORTANT: Platform Auditor changes for AAP 2.5 ONLY - DO NOT FORWARD PORT TO 2.6+
+# This change enables Platform Auditor access to settings views by using the
+# is_auditor convenience property instead of only checking is_system_auditor
+# AIA: Platform Auditor support added to settings views (lines 52, 78)
+# AIA PAI Nc Hin R Claude Code - https://aiattribution.github.io/interpret-attribution
+
 # Python
 import collections
 import logging
@@ -45,7 +51,9 @@ class SettingCategoryList(ListAPIView):
     def get_queryset(self):
         setting_categories = []
         categories = settings_registry.get_registered_categories()
-        if self.request.user.is_superuser or self.request.user.is_system_auditor:
+
+        # AAP 2.5 ONLY - DO NOT FORWARD PORT: Changed from is_system_auditor to is_auditor for Platform Auditor support
+        if self.request.user.is_superuser or self.request.user.is_auditor:
             pass  # categories = categories
         elif 'user' in categories:
             categories = {'user', _('User')}
@@ -66,7 +74,8 @@ class SettingSingletonDetail(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         self.category_slug = self.kwargs.get('category_slug', 'all')
         all_category_slugs = list(settings_registry.get_registered_categories().keys())
-        if self.request.user.is_superuser or getattr(self.request.user, 'is_system_auditor', False):
+        # AAP 2.5 ONLY - DO NOT FORWARD PORT: Changed from is_system_auditor to is_auditor for Platform Auditor support
+        if self.request.user.is_superuser or getattr(self.request.user, 'is_auditor', False):
             category_slugs = all_category_slugs
         else:
             category_slugs = {'user'}

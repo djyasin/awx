@@ -245,6 +245,48 @@ def user_is_system_auditor(user, tf):
 User.add_to_class('is_system_auditor', user_is_system_auditor)
 
 
+# AIA: Primarily AI, New content, Human-initiated, Reviewed, Claude (Anthropic AI) via Claude Code
+# AIA PAI Nc Hin R Claude Code - https://aiattribution.github.io/interpret-attribution
+
+
+#####
+# Note: The following code block should NOT be forward ported to 2.6.
+# 2.5 needs to be able to handle both the system_auditor and platform_auditor constructs.
+#####
+def get_platform_auditor_role():
+    rd, created = RoleDefinition.objects.get_or_create(
+        name='Platform Auditor', defaults={'description': 'Platform auditor role giving read permission to everything'}
+    )
+    if created:
+        rd.permissions.add(*list(permission_registry.permission_qs.filter(codename__startswith='view')))
+    return rd
+
+
+@property
+def user_is_platform_auditor(user):
+    if not hasattr(user, '_is_platform_auditor'):
+        if user.pk:
+            rd = get_platform_auditor_role()
+            user._is_platform_auditor = RoleUserAssignment.objects.filter(user=user, role_definition=rd).exists()
+        else:
+            # Odd case where user is unsaved, this should never be relied on
+            return False
+    return user._is_platform_auditor
+
+
+User.add_to_class('is_platform_auditor', user_is_platform_auditor)
+# END AI Contribution
+
+
+# Convenience property - AAP 2.5 ONLY - DO NOT FORWARD PORT: Added Platform Auditor support
+@property
+def user_is_auditor(user):
+    return user.is_system_auditor or user.is_platform_auditor
+
+
+User.add_to_class('is_auditor', user_is_auditor)
+
+
 def user_is_in_enterprise_category(user, category):
     ret = (category,) in user.enterprise_auth.values_list('provider') and not user.has_usable_password()
     # NOTE: this if-else block ensures existing enterprise users are still able to
