@@ -158,6 +158,7 @@ register(
     help_text=_('Username used to retrieve subscription and content information'),  # noqa
     category=_('System'),
     category_slug='system',
+    hidden=True,
 )
 
 register(
@@ -171,6 +172,7 @@ register(
     help_text=_('Password used to retrieve subscription and content information'),  # noqa
     category=_('System'),
     category_slug='system',
+    hidden=True,
 )
 
 
@@ -185,6 +187,7 @@ register(
     help_text=_('Client ID used to retrieve subscription and content information'),  # noqa
     category=_('System'),
     category_slug='system',
+    hidden=True,
 )
 
 register(
@@ -198,6 +201,7 @@ register(
     help_text=_('Client secret used to retrieve subscription and content information'),  # noqa
     category=_('System'),
     category_slug='system',
+    hidden=True,
 )
 
 register(
