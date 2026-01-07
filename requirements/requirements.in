@@ -1,4 +1,4 @@
-aiohttp>=3.11.6 # CVE-2024-52304
+aiohttp>=3.12.14 # CVE-2025-53643
 ansiconv==1.0.0  # UPGRADE BLOCKER: from 2013, consider replacing instead of upgrading
 ansible-runner==2.4.2
 jq  # used for indirect host counting feature
