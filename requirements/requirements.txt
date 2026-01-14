@@ -417,6 +417,7 @@ pygithub==2.6.0
 pyjwt[crypto]==2.8.0
     # via
     #   adal
+    #   django-ansible-base
     #   msal
     #   pygithub
     #   social-auth-core
@@ -482,6 +483,7 @@ requests==2.32.3
     #   -r /awx_devel/requirements/requirements.in
     #   adal
     #   azure-core
+    #   django-ansible-base
     #   django-oauth-toolkit
     #   kubernetes
     #   msal
@@ -604,7 +606,7 @@ zope-interface==6.2
 # The following packages are considered to be unsafe in a requirements file:
 pip==25.3
     # via -r /awx_devel/requirements/requirements.in
-setuptools==78.1.1
+setuptools==80.9.0
     # via
     #   -r /awx_devel/requirements/requirements.in
     #   asciichartpy
