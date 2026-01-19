@@ -13,7 +13,6 @@ from ansible_base.lib.testing.fixtures import settings_override_mutable  # NOQA:
 from awx.main.models import User
 from awx.api.versioning import reverse
 
-
 #
 # user creation
 #
