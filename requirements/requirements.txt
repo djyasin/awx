@@ -360,11 +360,12 @@ opentelemetry-sdk==1.24.0
     #   opentelemetry-exporter-otlp-proto-http
 opentelemetry-semantic-conventions==0.45b0
     # via opentelemetry-sdk
-packaging==23.2
+packaging==26.0
     # via
     #   ansible-runner
     #   msal-extensions
     #   setuptools-scm
+    #   wheel
 pbr==6.0.0
     # via -r /awx_devel/requirements/requirements.in
 pexpect==4.7.0
@@ -588,7 +589,7 @@ uwsgitop==0.11
     # via -r /awx_devel/requirements/requirements.in
 websocket-client==1.7.0
     # via kubernetes
-wheel==0.42.0
+wheel==0.46.3
     # via -r /awx_devel/requirements/requirements.in
 wrapt==1.16.0
     # via
