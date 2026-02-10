@@ -378,7 +378,17 @@ class Credential(PasswordFieldsModel, CommonModelNameNotUnique, ResourceMixin):
             if isinstance(actor, Team):
                 if actor.organization == self.organization:
                     return
-            raise DRFValidationError({'detail': _(f"You cannot grant credential access to a {actor._meta.object_name} not in the credentials' organization")})
+                # Superusers can grant cross-organization credential access to teams
+                requesting_user = kwargs.get('requesting_user', None)
+                if requesting_user and requesting_user.is_superuser:
+                    return
+            raise DRFValidationError(
+                {
+                    'detail': _(
+                        f"You cannot grant credential access to a {actor._meta.object_name} not in the credentials' organization. Only superusers can grant cross-organization credential access to teams"
+                    )
+                }
+            )
 
 
 class CredentialType(CommonModelNameNotUnique):
