@@ -1,4 +1,6 @@
-aiohttp>=3.12.14 # CVE-2025-53643
+aiohttp>=3.13.3 # CVE-2025-69223
+aiohappyeyeballs >=2.5.0  # aiohttp 3.12.11 requires 2.5.0+
+aiodns>=3.3.0  # aiohttp 3.12.11 requires 3.3.0+
 ansiconv==1.0.0  # UPGRADE BLOCKER: from 2013, consider replacing instead of upgrading
 ansible-runner==2.4.2
 jq  # used for indirect host counting feature
@@ -8,10 +10,11 @@ azure-identity
 azure-keyvault
 boto3>=1.40.46
 botocore>=1.40.46
+cachetools  # used for TTL caching in awx/conf/settings.py
 channels
 channels-redis
 cryptography>=41.0.7  # CVE-2023-49083
-Cython<3 # due to https://github.com/yaml/pyyaml/pull/702
+Cython==3.1.3
 daphne
 distro
 django==4.2.27  # CVE-2025-64460
@@ -20,7 +23,7 @@ django-cors-headers
 django-crum
 django-extensions
 django-guid==3.2.1
-django-oauth-toolkit<2.0.0      # Version 2.0.0 has breaking changes that will need to be worked out before upgrading
+django-oauth-toolkit<2.0.0  # Version 2.0.0 has breaking changes that will need to be worked out before upgrading
 django-polymorphic
 django-pglocks
 django-radius
@@ -29,15 +32,18 @@ djangorestframework>=3.15.2
 djangorestframework-yaml
 dynaconf<4
 filelock
+frozenlist>=1.4.0  # Python 3.12 requires 1.4.0+, transitive dep from aiohttp
 GitPython>=3.1.37  # CVE-2023-41040
 grpcio>=1.68.0  # CVE-2024-11407
 irc
+jaraco.functools>=3.6.0  # setuptools 80.9.0 requires splat function added in 3.6.0
 jinja2>=3.1.6  # CVE-2025-27516
 JSON-log-formatter
 jsonschema
+lxml>=4.9.3  # Python 3.12 requires 4.9.3+, transitive dep from python3-saml/xmlsec
 Markdown  # used for formatting API help
 maturin  # pydantic-core build dep
-msgpack<1.0.6  # 1.0.6+ requires cython>=3
+msgpack
 msrestazure
 OPA-python-client==2.0.2 # Code contain monkey patch targeted to 2.0.2 to fix https://github.com/Turall/OPA-python-client/issues/29
 openshift
@@ -46,7 +52,7 @@ opentelemetry-sdk~=1.24
 opentelemetry-instrumentation-logging
 opentelemetry-exporter-otlp
 pexpect==4.7.0  # see library notes
-prometheus_client
+prometheus-client
 psycopg
 psutil
 pyasn1>=0.6.2  # CVE-2026-2349
@@ -58,7 +64,7 @@ python-daemon>3.0.0
 python-dsv-sdk>=1.0.4
 python-tss-sdk>=1.2.1
 python-ldap
-pyyaml>=6.0.1
+pyyaml>=6.0.2  # 6.0.2+ required for Cython 3.x compatibility
 pyzstd  # otel collector log file compression library
 receptorctl==1.6.3
 social-auth-core == 4.5.4 # hard pinned due to resolver picking CVE version when uncapped
@@ -76,8 +82,8 @@ uwsgitop
 wheel>=0.46.2  # CVE-2026-24049
 pip==25.3  # see UPGRADE BLOCKERs
 setuptools==80.9.0  # see UPGRADE BLOCKERs
-setuptools_scm[toml]  # see UPGRADE BLOCKERs, xmlsec build dep
-setuptools-rust>=0.11.4  # cryptography build dep
+setuptools-scm[toml]  # see UPGRADE BLOCKERs, xmlsec build dep
+setuptools-rust  # cryptography build dep
 pkgconfig>=1.5.1  # xmlsec build dep - needed for offline build
 django-flags>=5.0.13
 # Temporarily added to use ansible-runner from git branch, to be removed
