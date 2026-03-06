@@ -66,7 +66,7 @@ python-tss-sdk>=1.2.1
 python-ldap
 pyyaml>=6.0.2  # 6.0.2+ required for Cython 3.x compatibility
 pyzstd  # otel collector log file compression library
-receptorctl==1.6.3
+receptorctl==1.6.4
 social-auth-core == 4.5.4 # hard pinned due to resolver picking CVE version when uncapped
 social-auth-app-django==5.4.2  # see UPGRADE BLOCKERs
 sqlparse>=0.4.4   # Required by django https://github.com/ansible/awx/security/dependabot/96
