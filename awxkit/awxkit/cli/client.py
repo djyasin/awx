@@ -3,7 +3,7 @@ from __future__ import print_function
 import logging
 import os
 import sys
-from importlib.metadata import version as _get_version
+from importlib.metadata import PackageNotFoundError, version as _get_version
 
 from requests.exceptions import RequestException
 
@@ -15,7 +15,10 @@ from awxkit import api, config, utils, exceptions, WSClient  # noqa
 from awxkit.cli.utils import HelpfulArgumentParser, cprint, disable_color, colored
 from awxkit.awx.utils import uses_sessions  # noqa
 
-__version__ = _get_version('awxkit')
+try:
+    __version__ = _get_version('awxkit')
+except PackageNotFoundError:
+    __version__ = 'unknown'
 
 
 class CLI(object):

@@ -163,7 +163,7 @@ class URLField(CharField):
     tld_re = (
         r'\.'  # dot
         r'(?!-)'  # can't start with a dash
-        r'(?:[a-z' + URLValidator.ul + r'0-9' + '-]{2,63}'  # domain label, this line was changed from the original URLValidator
+        r'(?:[a-z\u00a1-\uffff0-9' + '-]{2,63}'  # domain label, this line was changed from the original URLValidator
         r'|xn--[a-z0-9]{1,59})'  # or punycode label
         r'(?<!-)'  # can't end with a dash
         r'\.?'  # may have a trailing dot

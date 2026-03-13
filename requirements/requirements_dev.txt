@@ -1,6 +1,6 @@
 build
 coreapi
-django-debug-toolbar==3.2.4
+django-debug-toolbar>=4.4  # 4.4+ supports Django 5.x
 django-test-migrations
 drf-yasg<1.21.10  # introduces new DeprecationWarning that is turned into error
 # pprofile - re-add once https://github.com/vpelletier/pprofile/issues/41 is addressed

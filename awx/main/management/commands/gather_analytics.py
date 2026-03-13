@@ -3,7 +3,7 @@ import logging
 from awx.main import analytics
 from dateutil import parser
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from datetime import timezone
 
 
 class Command(BaseCommand):
