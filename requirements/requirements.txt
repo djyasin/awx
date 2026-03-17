@@ -94,7 +94,7 @@ cachetools==5.5.2
     #   kubernetes
     #   msrest
     #   requests
-cffi==1.16.0
+cffi==2.0.0
     # via
     #   cryptography
     #   pycares
@@ -111,7 +111,7 @@ click==8.1.7
     # via receptorctl
 constantly==23.10.4
     # via twisted
-cryptography==41.0.7
+cryptography==46.0.5
     # via
     #   -r /awx_devel/requirements/requirements.in
     #   adal
@@ -305,8 +305,9 @@ more-itertools==10.2.0
     #   irc
     #   jaraco-functools
     #   jaraco-text
-msal==1.26.0
+msal==1.35.1
     # via
+    #   -r /awx_devel/requirements/requirements.in
     #   azure-identity
     #   msal-extensions
 msal-extensions==1.1.0
@@ -435,7 +436,7 @@ pyjwt[crypto]==2.8.0
     #   twilio
 pynacl==1.5.0
     # via pygithub
-pyopenssl==24.0.0
+pyopenssl==26.0.0
     # via
     #   -r /awx_devel/requirements/requirements.in
     #   twisted
@@ -585,6 +586,7 @@ typing-extensions==4.9.0
     #   pydantic
     #   pydantic-core
     #   pygithub
+    #   pyopenssl
     #   twisted
 urllib3==2.6.3
     # via
