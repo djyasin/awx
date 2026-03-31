@@ -41,7 +41,7 @@ jinja2>=3.1.6  # CVE-2025-27516
 JSON-log-formatter
 jsonschema
 lxml>=4.9.3  # Python 3.12 requires 4.9.3+, transitive dep from python3-saml/xmlsec
-Markdown  # used for formatting API help
+Markdown>= 3.8.1  # CVE-2025-69534
 maturin  # pydantic-core build dep
 msal>=1.32.0 # needed for cryptography>=46
 msgpack
