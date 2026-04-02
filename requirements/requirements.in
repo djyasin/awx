@@ -13,7 +13,8 @@ botocore>=1.40.46
 cachetools<6.0  # google-auth<2.48.0 requires cachetools<6.0
 channels>=4.0  # 4.0+ supports Django 5.x
 channels-redis
-cryptography>=41.0.7  # CVE-2023-49083
+cffi==1.16.0  # pinned to match tag 4.6.27; unpin when bumping cryptography
+cryptography==41.0.7  # CVE-2023-49083
 Cython==3.1.3
 daphne>=4.0  # 4.0+ supports Django 5.x
 distro
@@ -43,6 +44,7 @@ jsonschema
 lxml>=4.9.3  # Python 3.12 requires 4.9.3+, transitive dep from python3-saml/xmlsec
 Markdown>= 3.8.1  # CVE-2025-69534
 maturin  # pydantic-core build dep
+msal==1.26.0  # pinned to match tag 4.6.27; unpin when bumping cryptography
 msgpack
 msrestazure
 OPA-python-client==2.0.2 # Code contain monkey patch targeted to 2.0.2 to fix https://github.com/Turall/OPA-python-client/issues/29
@@ -58,7 +60,7 @@ psutil
 pyasn1>=0.6.2  # CVE-2026-2349
 pygerduty
 PyGithub <= 2.6.0
-pyopenssl>=23.2.0  # resolve dep conflict from cryptography pin above
+pyopenssl==24.0.0  # resolve dep conflict from cryptography pin above
 pyparsing==2.4.6  # Upgrading to v3 of pyparsing introduce errors on smart host filtering: Expected 'or' term, found 'or'  (at char 15), (line:1, col:16)
 python-daemon>3.0.0
 python-dsv-sdk>=1.0.4
