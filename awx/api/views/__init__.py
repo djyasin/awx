@@ -1641,6 +1641,8 @@ class CredentialExternalTest(SubDetailAPIView):
 
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
+        if obj.credential_type.kind != 'external':
+            raise ParseError(_('Credential is not testable.'))
         backend_kwargs = {}
         for field_name, value in obj.inputs.items():
             backend_kwargs[field_name] = obj.get_input(field_name)
@@ -1701,6 +1703,8 @@ class CredentialTypeExternalTest(SubDetailAPIView):
 
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
+        if obj.kind != 'external':
+            raise ParseError(_('Credential type is not testable.'))
         backend_kwargs = request.data.get('inputs', {})
         backend_kwargs.update(request.data.get('metadata', {}))
         try:
