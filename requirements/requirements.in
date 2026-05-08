@@ -56,7 +56,7 @@ pexpect==4.7.0  # see library notes
 prometheus-client
 psycopg
 psutil
-pyasn1>=0.6.3  # CVE-2026-30922 
+pyasn1>=0.6.3  # CVE-2026-30922
 pygerduty
 PyGithub <= 2.6.0
 pyopenssl>=26.0.0  # cryptography>=46 requires pyopenssl>=26
@@ -67,7 +67,7 @@ python-tss-sdk>=1.2.1
 python-ldap
 pyyaml>=6.0.2  # 6.0.2+ required for Cython 3.x compatibility
 pyzstd  # otel collector log file compression library
-receptorctl==1.6.4
+receptorctl==1.6.5
 google-auth<2.48.0  # 2.48.0 unconditionally imports rsa package which is in the uninstall list
 social-auth-core == 4.5.4 # hard pinned due to resolver picking CVE version when uncapped
 social-auth-app-django==5.4.2  # see UPGRADE BLOCKERs
