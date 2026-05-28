@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse as django_reverse
 
 from awx.api.versioning import reverse
-from awx.main.models import JobTemplate, Inventory, Organization
+from awx.main.models import JobTemplate, Inventory, Organization, Project
 from awx.main.access import JobTemplateAccess, WorkflowJobTemplateAccess
 
 from ansible_base.rbac.models import RoleDefinition
@@ -218,3 +218,32 @@ def test_adding_user_to_controller_organization_roles(setup_managed_roles, role_
     post(url, data={'object_id': organization.id, 'role_definition': rd.id, 'user': bob.id}, user=admin, expect=201)
 
     get(url, user=bob, expect=200)
+
+
+@pytest.mark.django_db
+def test_org_child_admin_can_assign_role_to_sibling_team(setup_managed_roles, organization, team, rando, post, team_factory):
+    '''
+    A user with Organization Project Admin should be able to grant
+    a role to another team in the same org without needing Organization Audit.
+    '''
+    admin_team = team
+    ops_team = team_factory('ops-team')
+
+    # Give rando Organization Member + Organization Project Admin on the org
+    member_rd = RoleDefinition.objects.get(name='Organization Member')
+    project_admin_rd = RoleDefinition.objects.get(name='Organization Project Admin')
+    member_rd.give_permission(rando, organization)
+    project_admin_rd.give_permission(rando, organization)
+
+    # Make rando a member of admin_team
+    team_member_rd = RoleDefinition.objects.get(name='Controller Team Member')
+    team_member_rd.give_permission(rando, admin_team)
+
+    # rando should be able to assign a project use role to ops_team
+    use_rd = RoleDefinition.objects.get(name='Project Use')
+    project = Project.objects.create(name='test-project', organization=organization)
+    project_admin_obj_rd = RoleDefinition.objects.get(name='Project Admin')
+    project_admin_obj_rd.give_permission(rando, project)
+
+    url = django_reverse('roleteamassignment-list')
+    post(url, data={'role_definition': use_rd.id, 'team': ops_team.id, 'object_id': project.id}, user=rando, expect=201)
