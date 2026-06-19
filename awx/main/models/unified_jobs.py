@@ -217,7 +217,7 @@ class UnifiedJobTemplate(PolymorphicModel, CommonModelNameNotUnique, ExecutionEn
         # do not use this if in a subclass
         if cls != UnifiedJobTemplate:
             return super(UnifiedJobTemplate, cls).accessible_pk_qs(accessor, role_field)
-        from ansible_base.rbac.models import RoleEvaluation
+        from ansible_base.rbac.models import RoleEvaluation, RoleUserAssignment
 
         action = to_permissions[role_field]
 
@@ -230,7 +230,11 @@ class UnifiedJobTemplate(PolymorphicModel, CommonModelNameNotUnique, ExecutionEn
             return qs.values_list('id', flat=True)
 
         return (
-            RoleEvaluation.objects.filter(role__in=accessor.has_roles.all(), codename__in=all_codenames, content_type_id__in=[ct.id for ct in role_cts])
+            RoleEvaluation.objects.filter(
+                role_id__in=RoleUserAssignment.objects.filter(user_id=accessor.id).values('object_role_id'),
+                codename__in=all_codenames,
+                content_type_id__in=[ct.id for ct in role_cts],
+            )
             .values_list('object_id')
             .distinct()
         )
