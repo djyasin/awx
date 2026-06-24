@@ -347,6 +347,18 @@ def gather(dest=None, module=None, subset=None, since=None, until=None, collecti
         return tarfiles
 
 
+def _log_shipping_response(response, path):
+    filename = os.path.basename(path)
+    try:
+        data = response.json()
+        request_id = data.get('request_id', 'unknown')
+        account_number = data.get('account_number', 'unknown')
+        org_id = data.get('org_id', 'unknown')
+        logger.info(f"Analytics upload successful: file={filename} request_id={request_id} account_number={account_number} org_id={org_id}")
+    except Exception:
+        logger.info(f"Analytics upload successful: file={filename} status={response.status_code}")
+
+
 def ship(path):
     """
     Ship gathered metrics to the Insights API
@@ -399,4 +411,5 @@ def ship(path):
             logger.error('Upload failed with status {}, {}'.format(response.status_code, response.text))
             return False
 
+        _log_shipping_response(response, path)
         return True
