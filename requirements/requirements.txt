@@ -588,7 +588,7 @@ typing-extensions==4.9.0
     #   pygithub
     #   pyopenssl
     #   twisted
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   -r /awx_devel/requirements/requirements.in
     #   botocore
