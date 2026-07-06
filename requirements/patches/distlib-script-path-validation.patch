@@ -1,0 +1,19 @@
+Validate script output paths stay within target_dir during wheel installation.
+Prevents path traversal via malicious entry point names in pip's vendored distlib.
+Applied to: pip==25.3 (pip/_vendor/distlib/scripts.py)
+Remove when: pip is upgraded to a version containing the upstream fix.
+
+--- a/scripts.py
++++ b/scripts.py
+@@ -261,6 +261,11 @@
+             script_bytes = launcher + shebang + zip_data
+         for name in names:
+             outname = os.path.join(self.target_dir, name)
++            # Validate generated script path stays within target_dir
++            _target_dir = os.path.abspath(self.target_dir)
++            _outname_abs = os.path.abspath(outname)
++            if os.path.commonpath([_target_dir, _outname_abs]) != _target_dir:
++                raise ValueError("Invalid script name %r: path traversal or absolute path detected" % name)
+             if use_launcher:  # pragma: no cover
+                 n, e = os.path.splitext(outname)
+                 if e.startswith('.py'):

@@ -186,12 +186,18 @@ requirements_awx: virtualenv_awx
 	fi
 	$(VENV_BASE)/awx/bin/pip uninstall --yes -r requirements/requirements_tower_uninstall.txt
 
+## Apply security patches to pip's vendored distlib
+patch_pip:
+	@if [ -d requirements/patches ] && [ "$(VENV_BASE)" ]; then \
+		bash requirements/apply_pip_patches.sh requirements/patches $(VENV_BASE)/awx/bin/python3.12; \
+	fi
+
 requirements_awx_dev:
 	$(VENV_BASE)/awx/bin/pip install -r requirements/requirements_dev.txt
 
-requirements: requirements_awx
+requirements: requirements_awx patch_pip
 
-requirements_dev: requirements_awx requirements_awx_dev
+requirements_dev: requirements requirements_awx_dev
 
 requirements_test: requirements
 

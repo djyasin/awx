@@ -82,7 +82,7 @@ urllib3>=2.7.0 # CVE-2025-66471, CVE-2026-44432
 uWSGI>=2.0.28
 uwsgitop
 wheel>=0.46.2  # CVE-2026-24049
-pip==25.3  # see UPGRADE BLOCKERs
+pip==25.3  # see UPGRADE BLOCKERs; distlib script path validation patched via requirements/patches/
 setuptools==80.9.0  # see UPGRADE BLOCKERs
 setuptools-scm[toml]  # see UPGRADE BLOCKERs, xmlsec build dep
 setuptools-rust  # cryptography build dep

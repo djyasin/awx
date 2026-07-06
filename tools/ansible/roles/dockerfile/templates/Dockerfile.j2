@@ -72,10 +72,15 @@ ADD requirements/requirements.txt \
     requirements/requirements_tower_uninstall.txt \
     requirements/requirements_git.txt \
     requirements/requirements_git.credentials.txt \
+    requirements/apply_pip_patches.sh \
     /tmp/requirements/
+ADD requirements/patches/ /tmp/requirements/patches/
 
 RUN git config --global credential.helper "store --file=/tmp/requirements/requirements_git.credentials.txt"
 RUN --mount=type=ssh cd /tmp && make requirements_awx
+
+# Patch distlib script path validation in pip vendored distlib
+RUN bash /tmp/requirements/apply_pip_patches.sh /tmp/requirements/patches /var/lib/awx/venv/awx/bin/python3.12
 
 ARG VERSION
 ARG SETUPTOOLS_SCM_PRETEND_VERSION
@@ -183,6 +188,11 @@ RUN dnf module -y enable nodejs:18 && dnf module -y install nodejs:18/common && 
 
 RUN pip3.12 install -vv git+https://github.com/coderanger/supervisor-stdout.git@973ba19967cdaf46d9c1634d1675fc65b9574f6e
 RUN pip3.12 install -vv black setuptools-scm build
+
+# Patch distlib script path validation in system pip vendored distlib
+ADD requirements/patches/ /tmp/patches/
+ADD requirements/apply_pip_patches.sh /tmp/apply_pip_patches.sh
+RUN bash /tmp/apply_pip_patches.sh /tmp/patches python3.12
 
 # This package randomly fails to download.
 # It is nice to have in the dev env, but not necessary.

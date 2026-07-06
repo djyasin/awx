@@ -116,6 +116,14 @@ If modifying these libraries make sure testing with the offline build is perform
 Versions need to match the versions used in the pip bootstrapping step
 in the top-level Makefile.
 
+**distlib script path validation**: pip==25.3 contains a path traversal
+vulnerability in `pip/_vendor/distlib/scripts.py` where
+`ScriptMaker._write_script()` does not validate that script entry point names
+stay within the target directory. A patch is applied at build time via
+`requirements/patches/distlib-script-path-validation.patch` and
+`requirements/apply_pip_patches.sh`. Remove the patch when pip is upgraded to a
+version containing the upstream fix.
+
 ### cryptography
 
 If modifying this library make sure testing with the offline build is performed to confirm it is functionally working.
