@@ -178,7 +178,7 @@ virtualenv_awx:
 
 ## Install third-party requirements needed for AWX's environment.
 # this does not use system site packages intentionally
-requirements_awx: virtualenv_awx
+requirements_awx: virtualenv_awx patch_pip
 	if [[ "$(PIP_OPTIONS)" == *"--no-index"* ]]; then \
 	    cat requirements/requirements.txt requirements/requirements_local.txt | $(VENV_BASE)/awx/bin/pip install $(PIP_OPTIONS) -r /dev/stdin ; \
 	else \
@@ -187,7 +187,7 @@ requirements_awx: virtualenv_awx
 	$(VENV_BASE)/awx/bin/pip uninstall --yes -r requirements/requirements_tower_uninstall.txt
 
 ## Apply security patches to pip's vendored distlib
-patch_pip:
+patch_pip: virtualenv_awx
 	@if [ -d requirements/patches ] && [ "$(VENV_BASE)" ]; then \
 		bash requirements/apply_pip_patches.sh requirements/patches $(VENV_BASE)/awx/bin/python3.12; \
 	fi
