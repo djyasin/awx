@@ -1,0 +1,13 @@
+---
+name: Breaking Change Detection
+on:
+  pull_request:
+    paths:
+      - "schema.json"
+
+jobs:
+  detect:
+    uses: djyasin/actions/.github/workflows/oasdiff-detect-breaking-changes.yml@feat/oasdiff-breaking-change-detection
+    with:
+      spec-path: "schema.json"
+      override-label: "breaking-change-approved"
