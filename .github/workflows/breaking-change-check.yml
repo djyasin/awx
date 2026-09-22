@@ -154,17 +154,18 @@ jobs:
             core.setOutput('was-overridden', String(overrideApplied));
             core.setOutput('breaking-count', String(breakingCount));
 
+            const byCategory = {};
+            for (const c of changes) {
+              const cat = c.taxonomy_category;
+              if (!byCategory[cat]) byCategory[cat] = [];
+              byCategory[cat].push(c);
+            }
+
             // Build summary for the job summary
             if (hasBreaking && changes.length > 0) {
               let summary = `## Breaking Changes Detected\n\n`;
               summary += `oasdiff found ${breakingCount} breaking change(s) in \`schema.json\`:\n\n`;
 
-              const byCategory = {};
-              for (const c of changes) {
-                const cat = c.taxonomy_category;
-                if (!byCategory[cat]) byCategory[cat] = [];
-                byCategory[cat].push(c);
-              }
               for (const [cat, items] of Object.entries(byCategory)) {
                 summary += `### ${cat}\n\n`;
                 for (const c of items) {
