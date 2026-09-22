@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   detect:
@@ -161,43 +161,107 @@ jobs:
               byCategory[cat].push(c);
             }
 
-            // Build summary for the job summary
-            if (hasBreaking && changes.length > 0) {
-              let summary = `## Breaking Changes Detected\n\n`;
-              summary += `oasdiff found ${breakingCount} breaking change(s) in \`schema.json\`:\n\n`;
-
-              for (const [cat, items] of Object.entries(byCategory)) {
-                summary += `### ${cat}\n\n`;
-                for (const c of items) {
-                  summary += `- ${c.text}\n`;
-                }
-                summary += '\n';
-              }
-
-              await core.summary.addRaw(summary).write();
-            }
-
             const categoryNames = Object.keys(byCategory);
             const categoryList = categoryNames.length > 0
               ? categoryNames.join(', ')
               : 'Uncategorized';
 
             const docsUrl = 'https://github.com/ansible/actions/blob/main/README.md#breaking-change-detection';
+            const marker = '<!-- oasdiff-breaking-change-comment -->';
+
+            // Build the detailed breakdown used in both job summary and PR comment
+            let breakdown = '';
+            for (const [cat, items] of Object.entries(byCategory)) {
+              breakdown += `### ${cat}\n\n`;
+              for (const c of items) {
+                breakdown += `- ${c.text}\n`;
+              }
+              breakdown += '\n';
+            }
+
+            // Write job summary
+            if (hasBreaking && changes.length > 0) {
+              let summary = `## Breaking Changes Detected\n\n`;
+              summary += `oasdiff found **${breakingCount}** breaking change(s) in \`schema.json\`:\n\n`;
+              summary += breakdown;
+              await core.summary.addRaw(summary).write();
+            }
+
+            // Build PR comment body
+            let commentBody = marker + '\n';
+            if (hasBreaking && changes.length > 0) {
+              if (overrideApplied) {
+                commentBody += `## Breaking API Changes Detected (Override Applied)\n\n`;
+                commentBody += `oasdiff found **${breakingCount}** breaking change(s) in \`schema.json\`. `;
+                commentBody += `The \`${overrideLabel}\` label has been applied — this check is **passing with a warning**.\n\n`;
+              } else {
+                commentBody += `## Breaking API Changes Detected\n\n`;
+                commentBody += `oasdiff found **${breakingCount}** breaking change(s) in \`schema.json\`:\n\n`;
+              }
+              commentBody += breakdown;
+              commentBody += `---\n\n`;
+              if (!overrideApplied) {
+                commentBody += `**To proceed with an intentional breaking change,** a member of \`aap-breaking-change-approvers\`\n`;
+                commentBody += `must apply the \`${overrideLabel}\` label.\n\n`;
+              }
+              commentBody += `[API Change Approval Process](${docsUrl})\n`;
+            } else {
+              commentBody += `## No Breaking API Changes\n\n`;
+              commentBody += `oasdiff found no breaking changes in \`schema.json\`.\n`;
+            }
+
+            fs.writeFileSync('/tmp/breaking-comment.md', commentBody);
+            core.setOutput('comment-body', commentBody);
+            core.setOutput('comment-marker', marker);
 
             if (hasBreaking && overrideApplied) {
               core.warning(
                 `Breaking changes detected but "${overrideLabel}" label is present — ` +
-                `allowing merge with warning.\n` +
-                `Found ${breakingCount} breaking change(s): ${categoryList}.\n` +
-                `See the job summary for details or review the guidelines: ${docsUrl}`
+                `allowing merge with warning. ` +
+                `Found ${breakingCount} breaking change(s): ${categoryList}. ` +
+                `See PR comment for details.`
               );
             } else if (hasBreaking) {
               core.setFailed(
-                `${breakingCount} breaking change(s) detected: ${categoryList}.\n` +
-                `See the job summary tab for full details.\n` +
-                `To override, apply the "${overrideLabel}" label.\n` +
-                `Guidelines: ${docsUrl}`
+                `${breakingCount} breaking change(s) detected: ${categoryList}. ` +
+                `See PR comment for details and override instructions.`
               );
+            }
+
+      - name: Post or update PR comment
+        if: always() && steps.baseline.outputs.has-baseline == 'true'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '${{ steps.evaluate.outputs.comment-marker }}';
+            const commentBody = fs.readFileSync('/tmp/breaking-comment.md', 'utf8');
+            const prNumber = context.payload.pull_request.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: commentBody,
+              });
+              core.info(`Updated existing comment ${existing.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+              core.info('Posted new PR comment');
             }
 
       - name: Upload results
