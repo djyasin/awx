@@ -7,7 +7,7 @@ on:
 
 jobs:
   detect:
-    uses: djyasin/actions/.github/workflows/oasdiff-detect-breaking-changes.yml@feat/oasdiff-breaking-change-detection
+    uses: djyasin/actions/.github/workflows/oasdiff-detect-breaking-changes.yml@52dd49cac6d60b8dff233e7165b50f7edeff19a8
     with:
       spec-path: "schema.json"
       override-label: "breaking-change-approved"
