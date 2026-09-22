@@ -176,15 +176,26 @@ jobs:
               await core.summary.addRaw(summary).write();
             }
 
+            const categoryNames = Object.keys(byCategory);
+            const categoryList = categoryNames.length > 0
+              ? categoryNames.join(', ')
+              : 'Uncategorized';
+
+            const docsUrl = 'https://github.com/ansible/actions/blob/main/README.md#breaking-change-detection';
+
             if (hasBreaking && overrideApplied) {
               core.warning(
-                `Breaking changes detected but "${overrideLabel}" label is present. ` +
-                `Allowing merge with warning. ${breakingCount} breaking change(s) found.`
+                `Breaking changes detected but "${overrideLabel}" label is present — ` +
+                `allowing merge with warning.\n` +
+                `Found ${breakingCount} breaking change(s): ${categoryList}.\n` +
+                `See the job summary for details or review the guidelines: ${docsUrl}`
               );
             } else if (hasBreaking) {
               core.setFailed(
-                `${breakingCount} breaking change(s) detected in the OpenAPI spec. ` +
-                `Apply the "${overrideLabel}" label to override.`
+                `${breakingCount} breaking change(s) detected: ${categoryList}.\n` +
+                `See the job summary tab for full details.\n` +
+                `To override, apply the "${overrideLabel}" label.\n` +
+                `Guidelines: ${docsUrl}`
               );
             }
 
