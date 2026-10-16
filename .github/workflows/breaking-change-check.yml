@@ -107,15 +107,15 @@ jobs:
               "request-body-became-required": "Category 3: Request Contract Tightening",
               "request-parameter-removed": "Category 3: Request Contract Tightening",
               "request-parameter-became-required": "Category 3: Request Contract Tightening",
-              "response-property-became-nullable": "Category 4: Response Type Widening",
-              "response-property-type-changed": "Category 4: Response Type Widening",
-              "response-property-became-optional": "Category 4: Response Type Widening",
-              "request-property-enum-value-removed": "Category 5: Enum Value Removal",
-              "response-property-enum-value-removed": "Category 5: Enum Value Removal",
-              "api-security-added": "Category 6: Auth Changes",
-              "api-security-scheme-removed": "Category 6: Auth Changes",
-              "response-success-status-removed": "Category 7: Status Code Changes",
-              "response-mediatype-removed": "Category 7: Status Code Changes",
+              "response-property-became-nullable": "Category 4: Response Type Changes",
+              "response-property-type-changed": "Category 4: Response Type Changes",
+              "response-property-became-optional": "Category 4: Response Type Changes",
+              "request-property-enum-value-removed": "Category 5: Enum Value Removal or Splitting",
+              "response-property-enum-value-removed": "Category 5: Enum Value Removal or Splitting",
+              "api-security-added": "Category 6: Authentication and Authorization Changes",
+              "api-security-scheme-removed": "Category 6: Authentication and Authorization Changes",
+              "response-success-status-removed": "Category 7: Status Code and Error Changes",
+              "response-mediatype-removed": "Category 7: Status Code and Error Changes",
               "request-property-default-value-changed": "Category 8: Default Value Changes",
               "response-header-removed": "Category 10: Header Contract Changes",
             };
@@ -140,6 +140,8 @@ jobs:
               level: c.level || 'error',
               text: c.text || '',
               taxonomy_category: taxonomyMap[c.id] || 'Uncategorized',
+              path: c.path || c.operationId || '',
+              method: c.method || '',
             }));
 
             // Check override label
@@ -166,7 +168,7 @@ jobs:
               ? categoryNames.join(', ')
               : 'Uncategorized';
 
-            const docsUrl = 'https://github.com/ansible/actions/blob/main/README.md#breaking-change-detection';
+            const docsUrl = 'https://handbook.eng.ansible.com/proposals/AAP-53276-api-change-approval-process';
             const marker = '<!-- oasdiff-breaking-change-comment -->';
 
             // Build the detailed breakdown used in both job summary and PR comment
@@ -174,7 +176,10 @@ jobs:
             for (const [cat, items] of Object.entries(byCategory)) {
               breakdown += `### ${cat}\n\n`;
               for (const c of items) {
-                breakdown += `- ${c.text}\n`;
+                const location = [c.method, c.path].filter(Boolean).join(' ');
+                breakdown += location
+                  ? `- **${location}** — ${c.text}\n`
+                  : `- ${c.text}\n`;
               }
               breakdown += '\n';
             }
@@ -201,10 +206,13 @@ jobs:
               commentBody += breakdown;
               commentBody += `---\n\n`;
               if (!overrideApplied) {
-                commentBody += `**To proceed with an intentional breaking change,** a member of \`aap-breaking-change-approvers\`\n`;
-                commentBody += `must apply the \`${overrideLabel}\` label.\n\n`;
+                commentBody += `**To proceed with an intentional breaking change,** a member of\n`;
+                commentBody += `[Staff Engineering Leads](https://github.com/orgs/ansible/teams/ansible-staff-eng-leads)\n`;
+                commentBody += `must apply the \`${overrideLabel}\` label after completing the\n`;
+                commentBody += `[API Change Approval Process](${docsUrl}).\n\n`;
+              } else {
+                commentBody += `[API Change Approval Process](${docsUrl})\n\n`;
               }
-              commentBody += `[API Change Approval Process](${docsUrl})\n`;
             } else {
               commentBody += `## No Breaking API Changes\n\n`;
               commentBody += `oasdiff found no breaking changes in \`schema.json\`.\n`;
