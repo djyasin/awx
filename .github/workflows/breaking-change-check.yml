@@ -101,6 +101,7 @@ jobs:
               "api-removed-before-sunset": "Category 1: Endpoint Removal",
               "response-property-removed": "Category 2: Response Field Removal",
               "response-required-property-removed": "Category 2: Response Field Removal",
+              "response-optional-property-removed": "Category 2: Response Field Removal",
               "request-property-removed": "Category 3: Request Contract Tightening",
               "new-required-request-property": "Category 3: Request Contract Tightening",
               "request-property-became-required": "Category 3: Request Contract Tightening",
@@ -141,7 +142,7 @@ jobs:
               text: c.text || '',
               taxonomy_category: taxonomyMap[c.id] || 'Uncategorized',
               path: c.path || c.operationId || '',
-              method: c.method || '',
+              method: c.operation || c.method || '',
             }));
 
             // Check override label
