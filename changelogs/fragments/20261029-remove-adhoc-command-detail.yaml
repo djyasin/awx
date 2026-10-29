@@ -1,0 +1,7 @@
+---
+title: "Remove ad hoc command detail endpoint"
+type: removed
+breaking: true
+summary: "The /api/v2/ad_hoc_commands/{id}/ endpoint has been removed. Ad hoc command details are now accessed through the activity stream."
+endpoint: "/api/v2/ad_hoc_commands/{id}/"
+migration: "Use GET /api/v2/activity_stream/?object1=ad_hoc_command&object1__id={id} to retrieve ad hoc command information."
