@@ -1,0 +1,14 @@
+---
+name: Breaking Change PR Comment
+on:
+  workflow_run:
+    workflows: ["Breaking Change Detection"]
+    types: [completed]
+
+permissions:
+  pull-requests: write
+  actions: read
+
+jobs:
+  comment:
+    uses: djyasin/actions/.github/workflows/oasdiff-post-breaking-change-comment.yml@6c1a6b18d29c7cddc1030dd9539e9068f271f095
