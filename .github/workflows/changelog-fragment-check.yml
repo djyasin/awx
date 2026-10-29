@@ -1,0 +1,483 @@
+---
+name: "Changelog Fragment Check"
+
+on:
+  pull_request:
+    paths:
+      - "schema.json"
+      - "changelogs/fragments/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enforce:
+    name: "Changelog fragment enforcement"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Detect spec and fragment changes
+        id: detect-changes
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          SPEC_PATHS: "schema.json"
+          FRAGMENT_DIR: "changelogs/fragments"
+        with:
+          script: |
+            const specPaths = process.env.SPEC_PATHS;
+            const fragmentDir = process.env.FRAGMENT_DIR;
+
+            if (!context.payload.pull_request) {
+              core.warning('Not a pull request context — skipping change detection');
+              core.setOutput('has-spec-changes', 'false');
+              core.setOutput('changed-specs', '[]');
+              core.setOutput('has-fragment', 'false');
+              core.setOutput('fragment-paths', '');
+              return;
+            }
+
+            const pr = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100
+            });
+
+            const globMatch = (pattern, filename) => {
+              const regexPattern = pattern
+                .split('*')
+                .map(s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+                .join('[^/]*');
+              return new RegExp(`^${regexPattern}$`).test(filename);
+            };
+
+            const addedOrModified = files.filter(f => ['added', 'modified'].includes(f.status));
+
+            const changedSpecs = addedOrModified
+              .filter(f => globMatch(specPaths, f.filename))
+              .map(f => f.filename);
+
+            const fragmentFiles = addedOrModified
+              .filter(f => f.filename.startsWith(fragmentDir + '/'))
+              .filter(f => f.filename.endsWith('.yaml') || f.filename.endsWith('.yml'))
+              .filter(f => !f.filename.endsWith('.gitkeep'))
+              .map(f => f.filename);
+
+            const hasSpecChanges = changedSpecs.length > 0;
+            const hasFragment = fragmentFiles.length > 0;
+
+            core.setOutput('has-spec-changes', String(hasSpecChanges));
+            core.setOutput('changed-specs', JSON.stringify(changedSpecs));
+            core.setOutput('has-fragment', String(hasFragment));
+            core.setOutput('fragment-paths', fragmentFiles.join('\n'));
+
+            if (hasSpecChanges) {
+              core.notice(`Detected OpenAPI spec changes: ${changedSpecs.join(', ')}`);
+            } else {
+              core.notice('No OpenAPI spec changes detected');
+            }
+
+            if (hasFragment) {
+              core.notice(`Found ${fragmentFiles.length} changelog fragment(s): ${fragmentFiles.join(', ')}`);
+            }
+
+      - name: Validate fragments against schema
+        id: validate-fragments
+        if: steps.detect-changes.outputs.has-fragment == 'true'
+        env:
+          FRAGMENT_PATHS: ${{ steps.detect-changes.outputs.fragment-paths }}
+        run: |
+          set -e
+
+          cat > /tmp/validate_fragments.py << 'PYEOF'
+          import sys
+          import json
+          import yaml
+
+          try:
+            import jsonschema
+          except ImportError:
+            print("ERROR: jsonschema not installed")
+            sys.exit(1)
+
+          def validate_fragment(filepath, schema):
+            errors = []
+
+            try:
+              with open(filepath, 'r') as f:
+                data = yaml.safe_load(f)
+            except Exception as e:
+              return [f"Failed to parse YAML: {e}"]
+
+            if not isinstance(data, dict):
+              return ["Fragment must be a YAML object/dict"]
+
+            try:
+              jsonschema.validate(data, schema)
+            except jsonschema.ValidationError as e:
+              errors.append(e.message)
+
+            return errors
+
+          if __name__ == '__main__':
+            schema_path = sys.argv[1]
+            fragment_paths = sys.argv[2:]
+
+            schema = json.loads(open(schema_path).read())
+            all_errors = {}
+
+            for path in fragment_paths:
+              errors = validate_fragment(path, schema)
+              if errors:
+                all_errors[path] = errors
+
+            if all_errors:
+              print(json.dumps(all_errors, indent=2))
+              sys.exit(1)
+            else:
+              print("{}")
+              sys.exit(0)
+          PYEOF
+
+          pip install --quiet pyyaml jsonschema
+
+          fragment_paths_array=()
+          while IFS= read -r line; do
+            [[ -n "$line" ]] && fragment_paths_array+=("$line")
+          done <<< "$FRAGMENT_PATHS"
+
+          if python3 /tmp/validate_fragments.py \
+            config/changelog-fragment-schema.json \
+            "${fragment_paths_array[@]}" \
+            > /tmp/validation-errors.json 2>/tmp/validation-stderr.log; then
+            echo "validation-passed=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::All changelog fragments are valid"
+          else
+            echo "validation-passed=false" >> "$GITHUB_OUTPUT"
+            echo "::error::Changelog fragment validation failed"
+            cat /tmp/validation-errors.json
+          fi
+
+      - name: Install oasdiff
+        if: >-
+          steps.detect-changes.outputs.has-spec-changes == 'true'
+          && steps.detect-changes.outputs.has-fragment == 'false'
+        env:
+          OASDIFF_VERSION: "1.18.5"
+          OASDIFF_SHA256: "9352233c1234bf5baf4d983078f7afff7bab4941abc253a14914f13ea31a3bf4"
+        run: |
+          DOWNLOAD_URL="https://github.com/Tufin/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz"
+
+          curl -sSfL "${DOWNLOAD_URL}" -o /tmp/oasdiff.tar.gz
+
+          ACTUAL_SHA256=$(sha256sum /tmp/oasdiff.tar.gz | awk '{print $1}')
+          if [ "${ACTUAL_SHA256}" != "${OASDIFF_SHA256}" ]; then
+            echo "::error::oasdiff checksum mismatch! Expected ${OASDIFF_SHA256}, got ${ACTUAL_SHA256}"
+            exit 1
+          fi
+
+          tar -xzf /tmp/oasdiff.tar.gz -C /usr/local/bin oasdiff
+          chmod +x /usr/local/bin/oasdiff
+          oasdiff --help > /dev/null
+          rm /tmp/oasdiff.tar.gz
+
+      - name: Generate skeleton fragment
+        id: generate-skeleton
+        if: >-
+          steps.detect-changes.outputs.has-spec-changes == 'true'
+          && steps.detect-changes.outputs.has-fragment == 'false'
+        env:
+          CHANGED_SPECS: ${{ steps.detect-changes.outputs.changed-specs }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          FRAGMENT_DIR: "changelogs/fragments"
+        run: |
+          set -e
+
+          changed_specs=$(echo "$CHANGED_SPECS" | jq -r '.[]')
+          first_spec=$(echo "$changed_specs" | head -n 1)
+
+          echo "Generating skeleton fragment for: $first_spec"
+
+          if ! git show "origin/${BASE_REF}:${first_spec}" > /tmp/base-spec 2>/dev/null; then
+            echo "::warning::No baseline spec found on ${BASE_REF} — cannot generate skeleton"
+            echo "skeleton-generated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          set +e
+          oasdiff changelog /tmp/base-spec "${first_spec}" \
+            --format json \
+            > /tmp/oasdiff-changelog.json 2>/tmp/oasdiff-stderr.log
+          OASDIFF_EXIT=$?
+          set -e
+
+          if [ "${OASDIFF_EXIT}" -ne 0 ]; then
+            echo "::warning::oasdiff changelog failed with exit code ${OASDIFF_EXIT}"
+            if [ -s /tmp/oasdiff-stderr.log ]; then
+              cat /tmp/oasdiff-stderr.log
+            fi
+            echo "skeleton-generated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          change_type="changed"
+          is_breaking="false"
+          change_title="OpenAPI specification updated"
+
+          if [ -s /tmp/oasdiff-changelog.json ]; then
+            breaking_count=$(jq -r '[.[] | select(.level == "error")] | length' /tmp/oasdiff-changelog.json 2>/dev/null || echo "0")
+            if [ "$breaking_count" -gt 0 ]; then
+              is_breaking="true"
+            fi
+
+            added_paths=$(jq -r '[.[] | select(.id == "api-path-added")] | length' /tmp/oasdiff-changelog.json 2>/dev/null || echo "0")
+            removed_paths=$(jq -r '[.[] | select(.id == "api-path-removed-without-deprecation" or .id == "api-removed-without-deprecation")] | length' /tmp/oasdiff-changelog.json 2>/dev/null || echo "0")
+
+            if [ "$added_paths" -gt 0 ]; then
+              change_type="added"
+              change_title="New API endpoints added"
+            elif [ "$removed_paths" -gt 0 ]; then
+              change_type="removed"
+              change_title="API endpoints removed"
+            fi
+          fi
+
+          cat > /tmp/changelog-skeleton.yaml << EOF
+          title: "${change_title}"
+          type: ${change_type}
+          breaking: ${is_breaking}
+          summary: "TODO: Describe the change and its impact on API consumers"
+          endpoint: "*"
+          EOF
+
+          if [ "$is_breaking" = "true" ]; then
+            cat >> /tmp/changelog-skeleton.yaml << EOF
+          migration: "TODO: Provide migration guidance for this breaking change"
+          EOF
+          fi
+
+          echo "skeleton-generated=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::Generated skeleton changelog fragment"
+          cat /tmp/changelog-skeleton.yaml
+
+      - name: Check for api-changelog label
+        id: check-label
+        if: steps.detect-changes.outputs.has-spec-changes == 'true'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            if (!context.payload.pull_request) {
+              core.notice('Not a pull request context — skipping label check');
+              return;
+            }
+
+            const labels = context.payload.pull_request.labels || [];
+            const hasLabel = labels.some(l => l.name === 'api-changelog');
+
+            if (!hasLabel) {
+              core.warning(
+                'OpenAPI spec modified but api-changelog label not present. ' +
+                'Apply the label if this PR requires API changelog review.'
+              );
+            } else {
+              core.notice('api-changelog label is present');
+            }
+
+      - name: Post or update PR comment
+        if: always()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          HAS_SPEC_CHANGES: ${{ steps.detect-changes.outputs.has-spec-changes }}
+          HAS_FRAGMENT: ${{ steps.detect-changes.outputs.has-fragment }}
+          VALIDATION_PASSED: ${{ steps.validate-fragments.outputs.validation-passed }}
+          SKELETON_GENERATED: ${{ steps.generate-skeleton.outputs.skeleton-generated }}
+          FRAGMENT_PATHS: ${{ steps.detect-changes.outputs.fragment-paths }}
+          CHANGED_SPECS: ${{ steps.detect-changes.outputs.changed-specs }}
+        with:
+          script: |
+            const fs = require('fs');
+
+            const hasSpecChanges = process.env.HAS_SPEC_CHANGES === 'true';
+            const hasFragment = process.env.HAS_FRAGMENT === 'true';
+            const validationPassed = process.env.VALIDATION_PASSED === 'true';
+            const skeletonGenerated = process.env.SKELETON_GENERATED === 'true';
+
+            // Skip comment if nothing relevant
+            if (!hasSpecChanges && !hasFragment) {
+              core.info('No spec changes and no fragments, skipping comment');
+              return;
+            }
+
+            const prNumber = context.payload.pull_request.number;
+
+            const fragmentPaths = (process.env.FRAGMENT_PATHS || '')
+              .split('\n')
+              .filter(p => p.trim());
+
+            let changedSpecs = [];
+            try {
+              changedSpecs = JSON.parse(process.env.CHANGED_SPECS || '[]');
+            } catch (e) { /* ignore */ }
+
+            let validationErrors = {};
+            if (fs.existsSync('/tmp/validation-errors.json')) {
+              try {
+                const content = fs.readFileSync('/tmp/validation-errors.json', 'utf8');
+                validationErrors = JSON.parse(content);
+              } catch (e) {
+                core.warning(`Failed to parse validation errors: ${e.message}`);
+              }
+            }
+
+            const marker = '<!-- openapi-changelog-fragment-check -->';
+            let body = `${marker}\n\n`;
+
+            // Case 1: Skeleton generated (spec changes without fragment)
+            if (hasSpecChanges && !hasFragment && skeletonGenerated) {
+              const skeletonPath = '/tmp/changelog-skeleton.yaml';
+              const skeleton = fs.existsSync(skeletonPath)
+                ? fs.readFileSync(skeletonPath, 'utf8')
+                : '';
+
+              body += `## 📝 Changelog Fragment Required\n\n`;
+              body += `OpenAPI spec changes were detected, but no changelog fragment was found.\n\n`;
+              body += `**Action required:** Copy the skeleton below into \`changelogs/fragments/YYYYMMDD-<description>.yaml\`\n\n`;
+              body += `\`\`\`yaml\n`;
+              body += skeleton;
+              body += `\n\`\`\`\n\n`;
+              body += `Replace the \`TODO\` placeholders with your actual changes, then commit the file.\n`;
+            }
+            // Case 2: Validation failed
+            else if (hasFragment && !validationPassed) {
+              body += `## ❌ Changelog Fragment Validation Failed\n\n`;
+
+              if (validationErrors && Object.keys(validationErrors).length > 0) {
+                body += `The following validation errors were found:\n\n`;
+
+                for (const [filePath, errors] of Object.entries(validationErrors)) {
+                  body += `**\`${filePath}\`:**\n`;
+                  for (const error of errors) {
+                    body += `- ${error}\n`;
+                  }
+                  body += `\n`;
+                }
+              } else {
+                body += `Fragment validation failed. See workflow logs for details.\n\n`;
+              }
+
+              body += `Please fix the validation errors and update your fragment.\n`;
+            }
+            // Case 3: Everything passed
+            else if (hasFragment && validationPassed) {
+              body += `## ✅ Changelog Fragment Validated\n\n`;
+              body += `Found and validated the following fragment(s):\n\n`;
+
+              for (const fragmentPath of fragmentPaths) {
+                body += `- \`${fragmentPath}\`\n`;
+              }
+
+              body += `\nAll fragments passed schema validation.\n`;
+            }
+            // Case 4: Spec change, no fragment, no skeleton
+            else if (hasSpecChanges && !hasFragment) {
+              body += `## 📝 Changelog Fragment Required\n\n`;
+              body += `OpenAPI spec changes were detected, but no changelog fragment was found.\n\n`;
+              body += `Create a changelog fragment YAML file describing the API changes.\n`;
+            }
+
+            // Footer
+            if (changedSpecs.length > 0) {
+              body += `\n<sub>Changed specs: \`${changedSpecs.join('`, `')}\`</sub>\n`;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const existingComment = comments.find(c => c.body?.includes(marker));
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body,
+              });
+              core.info(`Updated existing comment ${existingComment.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: body,
+              });
+              core.info(`Created new comment on PR #${prNumber}`);
+            }
+
+      - name: Set final status
+        if: always()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          HAS_SPEC_CHANGES: ${{ steps.detect-changes.outputs.has-spec-changes }}
+          HAS_FRAGMENT: ${{ steps.detect-changes.outputs.has-fragment }}
+          VALIDATION_PASSED: ${{ steps.validate-fragments.outputs.validation-passed }}
+          SKELETON_GENERATED: ${{ steps.generate-skeleton.outputs.skeleton-generated }}
+        with:
+          script: |
+            const hasSpecChanges = process.env.HAS_SPEC_CHANGES === 'true';
+            const hasFragment = process.env.HAS_FRAGMENT === 'true';
+            const validationPassed = process.env.VALIDATION_PASSED === 'true';
+            const skeletonGenerated = process.env.SKELETON_GENERATED === 'true';
+
+            // FAIL: Fragment exists but validation failed
+            if (hasFragment && !validationPassed) {
+              core.setFailed(
+                'Changelog fragment validation failed. ' +
+                'Fix the validation errors in your fragment file(s). ' +
+                'See the validation step output above for details.'
+              );
+              return;
+            }
+
+            // WARN: Spec changed but no fragment present
+            if (hasSpecChanges && !hasFragment) {
+              let message =
+                'OpenAPI spec modified but no changelog fragment found. ';
+
+              if (skeletonGenerated) {
+                message +=
+                  'A skeleton fragment has been generated — see the PR comment for details. ';
+              } else {
+                message +=
+                  'Create a changelog fragment YAML file describing the API changes. ';
+              }
+
+              message +=
+                'If this is a cosmetic change (typo fix, example update, description clarification), ' +
+                'reviewers may waive the fragment requirement.';
+
+              core.warning(message);
+              return;
+            }
+
+            // PASS: Fragments exist and are valid
+            if (hasFragment && validationPassed) {
+              core.notice('Changelog fragment validation passed');
+              return;
+            }
+
+            // PASS: No spec changes and no fragments (nothing to do)
+            if (!hasSpecChanges && !hasFragment) {
+              core.notice('No OpenAPI spec changes detected');
+              return;
+            }
