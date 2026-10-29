@@ -33696,6 +33696,21 @@
         },
         "x-ai-description": "Create new service index role user assignments unassign"
       }
+    },
+    "/api/v2/mesh_topology/": {
+      "get": {
+        "operationId": "mesh_topology_list",
+        "summary": "List mesh topology nodes",
+        "description": "Returns the current mesh topology configuration.",
+        "responses": {
+          "200": {
+            "description": "Mesh topology retrieved successfully"
+          }
+        },
+        "tags": [
+          "Mesh"
+        ]
+      }
     }
   },
   "components": {
