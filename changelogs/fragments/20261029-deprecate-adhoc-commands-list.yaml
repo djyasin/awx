@@ -1,0 +1,7 @@
+---
+title: "Deprecate ad hoc commands list endpoint"
+type: deprecated
+breaking: false
+summary: "The GET /api/v2/ad_hoc_commands/ endpoint is deprecated. Use the execution environments API for running one-off commands."
+endpoint: "/api/v2/ad_hoc_commands/"
+migration: "Migrate to POST /api/v2/execution_environments/{id}/run/ for one-off command execution. The ad hoc commands endpoint will be removed in a future major release."
