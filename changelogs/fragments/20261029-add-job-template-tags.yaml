@@ -1,0 +1,6 @@
+---
+title: "Add tags field to job template responses"
+type: added
+breaking: false
+summary: "Job template list and detail responses now include an optional tags array for categorization."
+endpoint: "/api/v2/job_templates/"
