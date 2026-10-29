@@ -1,0 +1,7 @@
+---
+title: "Add rate limiting headers to API responses"
+type: changed
+breaking: true
+summary: "TODO: fill in the details about rate limiting"
+endpoint: "*"
+migration: "Update API clients to handle X-Rate-Limit response headers."
