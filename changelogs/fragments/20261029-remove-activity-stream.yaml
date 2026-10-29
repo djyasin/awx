@@ -1,0 +1,6 @@
+---
+title: "Remove activity stream list endpoint"
+type: removed
+breaking: true
+summary: "The activity stream list endpoint has been removed."
+endpoint: "/api/v2/activity_stream/"
