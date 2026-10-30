@@ -49,3 +49,7 @@ Get Involved
 We welcome your feedback and ideas via the [Ansible Forum](https://forum.ansible.com/tag/awx).
 
 For a full list of all the ways to talk with the Ansible Community, see the [AWX Communication guide](https://docs.ansible.com/projects/awx/en/latest/contributor/communication.html).
+
+## API Standards
+
+This project follows the API contract stability standards defined in ANSTRAT-2346.
