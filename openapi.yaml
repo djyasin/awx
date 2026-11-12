@@ -13456,22 +13456,6 @@ paths:
                 $ref: '#/components/schemas/WorkflowJobTemplate'
           description: ''
       x-ai-description: Create a workflow job template of an organization
-  /api/v2/ping/:
-    get:
-      operationId: ping_retrieve
-      description: |-
-        Return some basic information about this instance
-
-        Everything returned here should be considered public / insecure, as
-        this requires no auth and is intended for use by the installer process.
-      tags:
-      - ping
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-      x-ai-description: Return basic information about this instance
   /api/v2/project_updates/:
     get:
       operationId: project_updates_list
