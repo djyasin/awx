@@ -130,6 +130,8 @@ from awx.main.tasks.system import update_inventory_computed_fields
 from awx.main.validators import vars_validate_or_raise
 
 from awx.api.versioning import reverse
+from ansible_base.lib.utils.views.deprecation import DeprecationSerializerMixin
+from drf_spectacular.utils import extend_schema_serializer
 from awx.api.fields import BooleanNullField, CharNullField, ChoiceNullField, VerbatimField, DeprecatedCredentialField
 
 # AWX Utils
@@ -1545,6 +1547,7 @@ class ProjectSerializer(CleanTextMixin, UnifiedJobTemplateSerializer, ProjectOpt
             '-execution_environment',
             'organization',
             'scm_update_on_launch',
+            'galaxy_update_on_launch',
             'scm_update_cache_timeout',
             'allow_override',
             'custom_virtualenv',
@@ -2583,7 +2586,8 @@ class InventorySourceOptionsSerializer(BaseSerializer):
         return summary_fields
 
 
-class InventorySourceSerializer(CleanTextMixin, UnifiedJobTemplateSerializer, InventorySourceOptionsSerializer):
+@extend_schema_serializer(deprecate_fields=["credential"])
+class InventorySourceSerializer(DeprecationSerializerMixin, CleanTextMixin, UnifiedJobTemplateSerializer, InventorySourceOptionsSerializer):
     status = serializers.ChoiceField(choices=InventorySource.INVENTORY_SOURCE_STATUS_CHOICES, read_only=True)
     last_update_failed = serializers.BooleanField(read_only=True)
     last_updated = serializers.DateTimeField(read_only=True)
@@ -2592,6 +2596,10 @@ class InventorySourceSerializer(CleanTextMixin, UnifiedJobTemplateSerializer, In
 
     # source_vars is raw YAML/JSON that legitimately contains Jinja2 syntax.
     excluded_fields = frozenset({'source_vars'})
+
+    deprecated_fields = {
+        'credential': 'The credential field has been deprecated. Use credentials instead.',
+    }
 
     class Meta:
         model = InventorySource
@@ -2757,8 +2765,13 @@ class InventorySourceUpdateSerializer(InventorySourceSerializer):
         return super(InventorySourceUpdateSerializer, self).validate(attrs)
 
 
-class InventoryUpdateSerializer(UnifiedJobSerializer, InventorySourceOptionsSerializer):
+@extend_schema_serializer(deprecate_fields=["credential"])
+class InventoryUpdateSerializer(DeprecationSerializerMixin, UnifiedJobSerializer, InventorySourceOptionsSerializer):
     custom_virtualenv = serializers.ReadOnlyField()
+
+    deprecated_fields = {
+        'credential': 'The credential field has been deprecated. Use credentials instead.',
+    }
 
     class Meta:
         model = InventoryUpdate
