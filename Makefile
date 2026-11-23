@@ -28,8 +28,9 @@ TEST_DIRS ?= awx/main/tests/unit awx/main/tests/functional awx/conf/tests
 PARALLEL_TESTS ?= -n auto
 # collection integration test directories (defaults to all)
 COLLECTION_TEST_TARGET ?=
-# Python version for ansible-test (must be 3.11, 3.12, or 3.13)
-ANSIBLE_TEST_PYTHON_VERSION ?= 3.13
+# Python version, declared once in .github/python-version (must be 3.11, 3.12, or 3.13 for ansible-test)
+PYTHON_VERSION_TARGET := $(shell cat .github/python-version)
+ANSIBLE_TEST_PYTHON_VERSION ?= $(PYTHON_VERSION_TARGET)
 # args for collection install
 COLLECTION_PACKAGE ?= awx
 COLLECTION_NAMESPACE ?= awx
@@ -136,8 +137,8 @@ clean-dist:
 
 clean-schema:
 	rm -rf swagger.json
-	rm -rf schema.json
-	rm -rf reference-schema.json
+	rm -rf openapi.yaml
+	rm -rf reference-schema.yaml
 
 clean-languages:
 	rm -f $(I18N_FLAG_FILE)
@@ -369,13 +370,7 @@ genschema: awx-link reports
 	@if [ "$(VENV_BASE)" ]; then \
 		. $(VENV_BASE)/awx/bin/activate; \
 	fi; \
-	$(MANAGEMENT_COMMAND) spectacular --format openapi-json --file schema.json
-
-genschema-yaml: awx-link reports
-	@if [ "$(VENV_BASE)" ]; then \
-		. $(VENV_BASE)/awx/bin/activate; \
-	fi; \
-	$(MANAGEMENT_COMMAND) spectacular --format openapi --file schema.yaml
+	$(MANAGEMENT_COMMAND) spectacular --format openapi --file openapi.yaml
 
 check: format
 
@@ -605,14 +600,14 @@ awx-tui:
 SCHEMA_DIFF_BASE_FOLDER ?= awx
 SCHEMA_DIFF_BASE_BRANCH ?= devel
 detect-schema-change: genschema
-	curl https://s3.amazonaws.com/awx-public-ci-files/$(SCHEMA_DIFF_BASE_FOLDER)/$(SCHEMA_DIFF_BASE_BRANCH)/schema.json -o reference-schema.json
+	curl https://s3.amazonaws.com/awx-public-ci-files/$(SCHEMA_DIFF_BASE_FOLDER)/$(SCHEMA_DIFF_BASE_BRANCH)/openapi.yaml -o reference-schema.yaml
 	# Ignore differences in whitespace with -b
 	# diff exits with 1 when files differ - capture but don't fail
-	-diff -u -b reference-schema.json schema.json
+	-diff -u -b reference-schema.yaml openapi.yaml
 
 validate-openapi-schema: genschema
-	@echo "Validating OpenAPI schema from schema.json..."
-	@python3 -c "from openapi_spec_validator import validate; import json; spec = json.load(open('schema.json')); validate(spec); print('✓ Schema is valid')"
+	@echo "Validating OpenAPI schema from openapi.yaml..."
+	@python3 -c "from openapi_spec_validator import validate; import yaml; spec = yaml.safe_load(open('openapi.yaml')); validate(spec); print('✓ Schema is valid')"
 
 docker-compose-clean: awx/projects
 	$(DOCKER_COMPOSE) -f tools/docker-compose/_sources/docker-compose.yml rm -sf
@@ -671,7 +666,7 @@ VERSION:
 	@echo "awx: $(VERSION)"
 
 PYTHON_VERSION:
-	@echo "$(subst python,,$(PYTHON))"
+	@echo "$(PYTHON_VERSION_TARGET)"
 
 .PHONY: version-for-buildyml
 version-for-buildyml:
